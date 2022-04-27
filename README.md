@@ -10,11 +10,16 @@ THERE ARE 3 TOKEN TYPES:
 
 THERE ARE 2 LOTTERY TYPES:
 1. The 6K NFTs hodlers have a daily chance to win BTCLP Governance Tokens just by hodling.
-2. BTCLP Tokens and NLL Tokens are used to purchase tickets. At the end of the daily draw, a reward is given to 10 lucky winners and the exact reward amount is also burned at the same time.
+2. BTCLP Tokens and NLL Tokens are used to purchase tickets in the Daily No Loss Lottery. 
 
 TOKEN FEATURES:
-BTCLP Token is prevalued and made in circulation
-NLL Token is non-transferable and only works inside the No Loss Lottery, it's like 1 free ticket.
+1. BTCLP Governance Token is prevalued and made in circulation
+2. NLL Utility Token is non-transferable and only works inside the No Loss Lottery, it's basically 1 free ticket.
+
+HOW THE NO LOSS LOTTERY WORKS:
+1. At the end of the daily draw, BTCLP and NLL reward are distributed to 10 lucky winners.
+2. For BTCLP Tokens the same reward amount that is given to the 10 winners is also burned at the same time thus making it deflationary. 
+3. NLL Tokens are also rewarded to the 10 lucky winners. NLL Tokens are burned when purchase 1 ticket in the daily token no loss lottery.
 
 # Bscscan verification
 This project demonstrates and covers tools commonly used alongside Hardhat in the ecosystem while doing all tests on a local Binance Smart Chain Mainnet Fork. In this project, copy the .env.example file to a file named .env, and then edit it to fill in the details. 
