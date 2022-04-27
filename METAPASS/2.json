@@ -1,0 +1,24 @@
+{
+    "id": 2,
+    "name": "Legendary",
+    "description": "A unique chance to get a key that opens a world of possibilities in the decentralized lotteries universe. The Bitcoin Lottery Protocol (NFT Game Pass) allows holders to participate automatically in the daily No Loss Lottery and host their own custom games.",
+    "image": "https://bafybeigigpb5jmryg5ayxxqn5irho4cne26qomp7zqphvlq4qwprtbsvyq.ipfs.dweb.link/legendary.gif",
+    "attributes": [
+        {
+          "trait_type": "ACCESS TYPE", 
+          "value": "Unlimited"
+        },
+        {
+          "trait_type": "Duration", 
+          "value": "Lifetime"
+        },
+        {
+          "trait_type": "NLL Participation", 
+          "value": "Lifetime"
+        },
+        {
+          "trait_type": "Custom Game Creation", 
+          "value": "Lifetime"
+        }
+    ]
+}
