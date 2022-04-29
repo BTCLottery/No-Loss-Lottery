@@ -15,7 +15,7 @@ contract NLLToken is Ownable, MinimalERC20 {
     }
 
     constructor() MinimalERC20("NLL Token", "NLL") {
-      _mint(_msgSender(), 136000 * 10 ** decimals()); // PreSeeders & Referral & KYC Airdrop
+      // _mint(_msgSender(), 1000 * 10 ** decimals());
     }
 
     function setNoLossLotteries(address nllAddress, bool status) public onlyOwner {
@@ -31,9 +31,9 @@ contract NLLToken is Ownable, MinimalERC20 {
       _transfer(_msgSender(), to, amount);
     }
 
-    function burnFrom(address from, uint256 amount) public onlyNoLossLotteries {
-      _burn(from, amount);
-    }
+    // function burnFrom(address from, uint256 amount) public onlyNoLossLotteries {
+    //   _burn(from, amount);
+    // }
 
     function burn(uint256 amount) public {
       _burn(_msgSender(), amount);
@@ -49,7 +49,7 @@ contract NLLToken is Ownable, MinimalERC20 {
       require(_msgSender() != address(0), "ERC677: can't receive tokens from the zero address");
       require(_to != address(0), "ERC677: can't send to zero address");
       require(_to != address(this), "ERC677: can't send tokens to the token address");
-      require(igoAndNoLossLotteries[_to] == true , "Transfers are only allowed in the Daily, Weekly, Monthly No Loss Lotteries.");
+      require(igoAndNoLossLotteries[_to] == true, "Transfers are only allowed in the Daily, Weekly, Monthly No Loss Lotteries.");
 
       _transfer(_msgSender(), _to, _value);
       emit Transfer(_msgSender(), _to, _value);

@@ -13,10 +13,10 @@ pragma solidity ^0.8.4;
 // IGO - https://igo.btclottery.io
 // DEMO - https://demo.btclottery.io
 // Github - https://github.com/btclottery
-// Youtube - https://www.youtube.com/channel/UCFIqdTB47jtHiM0F0bZc_0Q
 // Whitepaper - https://www.btclottery.io/Bitcoin-Lottery-Whitepaper.pdf
+// Youtube - https://www.youtube.com/channel/UCFIqdTB47jtHiM0F0bZc_0Q
 // Twitter - https://twitter.com/btclottery_io
-// Discord - https://discord.com/channels/806829532081815552/806829532081815555
+// Discord - https://discord.gg/tGc8GhEc
 // Telegram - https://t.me/btclottery_io
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -26,7 +26,6 @@ import "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol";
 import "./utils/token/ERC677/ERC677Receiver.sol";
 
-/// @custom:security-contact support@btclottery.io
 contract BTCLPToken is ERC20, ERC20Burnable, Ownable, ERC20Permit, ERC20Votes {
     uint256 public constant minimumMintInterval = 365 days;
     uint256 public constant mintCap = 100; // 1%
@@ -41,8 +40,8 @@ contract BTCLPToken is ERC20, ERC20Burnable, Ownable, ERC20Permit, ERC20Votes {
     }
 
     /**
-     * @dev Mints new tokens. Can only be executed every `minimumMintInterval`, by the owner, and cannot 
-     *      exceed `mintCap / 10000` fraction of the current total supply.
+     * @dev Mints new tokens. Can only be executed every `minimumMintInterval` by a governance proposal.
+     * It cannot exceed 1% of the current total supply.
      * @param to The address to mint the new tokens to.
      * @param amount The quantity of tokens to mint.
      */

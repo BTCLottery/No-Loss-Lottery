@@ -21,6 +21,54 @@ HOW THE NO LOSS LOTTERY WORKS:
 2. For BTCLP Tokens the same reward amount that is given to the 10 winners is also burned at the same time thus making it deflationary. 
 3. NLL Tokens are also rewarded to the 10 lucky winners. NLL Tokens are burned when purchase 1 ticket in the daily token no loss lottery.
 
+
+STEPS TO-DO SMART CONTRACTS:
+1. BTCLP Token
+    1.1. Need to create a Treasury
+    1.2. Need to create a Timelock
+    1.3. Need to create a Governor
+    1.4. Create tests
+    1.5. Create the deployment
+
+2. NLL Token
+    1.1. We need to deploy the No Loss Lottery first
+    1.2. We need to whitelisting the No Loss Lottery Address
+    1.3. We need to transfer ownership of the NLL Token to the No Loss Lottery
+
+<!-- 328.000 BTCLP Tokens Daily Reward -->
+3. The No Loss Lottery - BTCLP & NLL Tokens only --- 100K BTCLP Tokens and 1000 NLL reward daily and burn equal amount
+    3.1. We need to create a Gnosis MultiSig Wallet for the Treasury of the No Loss Lottery
+    3.2. We need to approve the full amount to the No Loss Lottery
+    3.3. We need to add inside the No Loss Lottery a transferFrom function from the Treasury
+    3.4. We need to recheck all values and recalculate all emissions to match 10+ years
+        3.5. We need to add a Daily,Weekly,Monthly reward mechanism (26 days of daily rewards / 3 days of x2 Weekly Rewards / 1 day of x3 Monthly Rewards)
+        3.6. Create a deflationary reward mechanism
+    3.5. Create a few tests
+    3.6. Create the deployment
+
+<!-- 40% to NFT Holders and 60% to Tokens -->
+4. The No Loss Lottery - NFT Tokens only
+    4.1. We need to create a Gnosis MultiSig Wallet for the Treasury of the No Loss Lottery
+    4.2. We need to approve the full amount to the No Loss Lottery
+    4.3. We need to add inside the No Loss Lottery a transferFrom function from the Treasury
+    4.4. We need to recheck all values and recalculate all emissions to match 10+ years
+    4.5. Create a few tests
+    4.6. Create the deployment
+
+5. NFT Meta Game Pass
+    5.1. Move from IPFS to Arweave
+    5.2. Replace GIFs with MP4
+    5.3. Add more attributes to the metadata
+
+STEPS TO-DO ON FRONTEND
+    1. Do the frontend minting part for NFTs
+    2. Do the No Loss Lottery for Tokens
+    3. Do the No Loss Lottery for NFTs
+    EXTRA
+    4. Voting Governance Mechanisms
+    5. Staking
+    6. Yield Farming
+
 # Bscscan verification
 This project demonstrates and covers tools commonly used alongside Hardhat in the ecosystem while doing all tests on a local Binance Smart Chain Mainnet Fork. In this project, copy the .env.example file to a file named .env, and then edit it to fill in the details. 
 Enter your Bscscan API key, your archive node URL (eg from Moralis), and the private key or mnemonic of the account which will send the deployment transaction. 
