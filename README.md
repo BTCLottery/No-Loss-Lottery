@@ -43,8 +43,9 @@ STEPS TO-DO SMART CONTRACTS:
     3.4. We need to recheck all values and recalculate all emissions to match 10+ years
         3.5. We need to add a Daily,Weekly,Monthly reward mechanism (26 days of daily rewards / 3 days of x2 Weekly Rewards / 1 day of x3 Monthly Rewards)
         3.6. Create a deflationary reward mechanism
-    3.5. Create a few tests
-    3.6. Create the deployment
+        3.7. Add a mechanism to stop playing and upgrade to a newer No Loss Lottery V3 or V4 version in the future
+    3.8. Create a few tests
+    3.9. Create the deployment
 
 <!-- 40% to NFT Holders and 60% to Tokens -->
 4. The No Loss Lottery - NFT Tokens only
@@ -61,13 +62,14 @@ STEPS TO-DO SMART CONTRACTS:
     5.3. Add more attributes to the metadata
 
 STEPS TO-DO ON FRONTEND
-    1. Do the frontend minting part for NFTs
-    2. Do the No Loss Lottery for Tokens
-    3. Do the No Loss Lottery for NFTs
+    1. Add Non-Custodial Wallets using Blocknative
+    2. Do the frontend minting part for NFTs
+    3. Do the No Loss Lottery for Tokens
+    4. Do the No Loss Lottery for NFTs
     EXTRA
-    4. Voting Governance Mechanisms
-    5. Staking
-    6. Yield Farming
+    5. Voting Governance Mechanisms
+    6. Staking
+    7. Yield Farming
 
 # Bscscan verification
 This project demonstrates and covers tools commonly used alongside Hardhat in the ecosystem while doing all tests on a local Binance Smart Chain Mainnet Fork. In this project, copy the .env.example file to a file named .env, and then edit it to fill in the details. 
