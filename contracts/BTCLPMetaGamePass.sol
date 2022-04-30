@@ -5,9 +5,14 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "@openzeppelin/contracts/utils/Base64.sol";
 
-contract BTCLPMetaGamePass is ERC1155, Ownable, ERC1155Supply { // 0x4715aCa23Edad68C64139f6C43C8652Aa5616801
+contract BTCLPMetaGamePass is ERC1155, Ownable, ERC1155Supply { 
+    // 0x4715aCa23Edad68C64139f6C43C8652Aa5616801
+    // 0x439356Ad40D2f2961c99FFED4453f482AEC453Af
+
+    // OPENSEA - Royalties 10% (5% TEAM / 5% HODLERS)
+    // LOOKSRARE - Royalties 10% (5% TEAM / 5% HODLERS)
+
     uint256 public constant COMMON = 0;
     uint256 public constant EPIC = 1;
     uint256 public constant LEGENDARY = 2;
@@ -22,7 +27,7 @@ contract BTCLPMetaGamePass is ERC1155, Ownable, ERC1155Supply { // 0x4715aCa23Ed
     string public name = "Bitcoin Lottery Protocol (GAME PASS)";
     
     constructor(
-        // uint256 _allowMintingOn, 
+        // uint256 _allowMintingOn,
         // string memory url
         ) ERC1155("https://ipfs.io/ipfs/QmVQBNDGGzC2cunqq53SKezyV8XsB4otvepREJbreXYSuz/") {
 

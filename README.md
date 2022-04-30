@@ -28,7 +28,7 @@ STEPS TO-DO SMART CONTRACTS:
     1.2. Need to create a Timelock
     1.3. Need to create a Governor
     1.4. Create tests
-    1.5. Create the deployment
+    1.5. Create the deployment and verify contracts
 
 2. NLL Token
     1.1. We need to deploy the No Loss Lottery first
@@ -45,7 +45,7 @@ STEPS TO-DO SMART CONTRACTS:
         3.6. Create a deflationary reward mechanism
         3.7. Add a mechanism to stop playing and upgrade to a newer No Loss Lottery V3 or V4 version in the future
     3.8. Create a few tests
-    3.9. Create the deployment
+    3.9. Create the deployment and verify contracts
 
 <!-- 40% to NFT Holders and 60% to Tokens -->
 4. The No Loss Lottery - NFT Tokens only
@@ -54,7 +54,7 @@ STEPS TO-DO SMART CONTRACTS:
     4.3. We need to add inside the No Loss Lottery a transferFrom function from the Treasury
     4.4. We need to recheck all values and recalculate all emissions to match 10+ years
     4.5. Create a few tests
-    4.6. Create the deployment
+    4.6. Create the deployment and verify contracts
 
 5. NFT Meta Game Pass
     5.1. Move from IPFS to Arweave
