@@ -155,7 +155,7 @@ contract BTCLPMetaGamePass is ERC1155, IERC2981, Ownable, ERC1155Supply, Context
 
     // Update for collection-specific metadata.
     function contractURI() public pure returns (string memory) {
-        return "https://ipfs.io/ipfs/QmVA6ECJuJSd1w6ZFXs1w6w2EuHSab21K9tEfj8r4KhkG6"; // Contract-level metadata
+        return "ipfs://QmaSAzDbWNDdMWMwHcEdLdDGLL9w5VGrrrXtAjkprcF4cy"; // Contract-level metadata
     }
 
     // The following functions are overrides required by Solidity.

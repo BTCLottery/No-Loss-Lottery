@@ -2,7 +2,7 @@
     "id": 0,
     "name": "Common",
     "description": "A unique chance to get a key that opens a world of possibilities in the decentralized lotteries universe. The Bitcoin Lottery Protocol (NFT Game Pass) allows holders to participate automatically in the daily No Loss Lottery.",
-    "image": "https://bafybeigigpb5jmryg5ayxxqn5irho4cne26qomp7zqphvlq4qwprtbsvyq.ipfs.dweb.link/common.gif",
+    "image": "ipfs://QmPcy7PTRxgzFA8JwnDtqACmCz314V6MsQ6LmvFmpULbSd",
     "external_link": "https://btclottery.io",
     "seller_fee_basis_points": 1000,
     "fee_recipient": "0xd1E006022f11a1878b391b92A69Df1F0741F6a92",
