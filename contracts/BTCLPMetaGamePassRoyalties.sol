@@ -9,12 +9,13 @@ import "./@openzeppelin/contracts/security/Pausable.sol";
 import "./@openzeppelin/contracts/utils/Strings.sol";
 import "./@openzeppelin/contracts/utils/ContextMixin.sol";
 
+// 0xF452472Df25fFc5631c3AF622619d0148770A046
 // 0x439356Ad40D2f2961c99FFED4453f482AEC453Af
-contract BTCLPMetaGamePass is ERC1155, IERC2981, Ownable, ERC1155Supply, ContextMixin { 
+contract BTCLPMetaGamePassRoyalties is ERC1155, IERC2981, Ownable, ERC1155Supply, ContextMixin { 
     using Strings for uint256;
     string public name = "Bitcoin Lottery Protocol Game Pass";
     string public symbol = "BLPGP";
-    address private _treasury;
+    address private _recipient;
 
     uint256 public constant COMMON = 0;
     uint256 public constant EPIC = 1;
@@ -39,21 +40,7 @@ contract BTCLPMetaGamePass is ERC1155, IERC2981, Ownable, ERC1155Supply, Context
         }
 
         timeDeployed = block.timestamp;
-        _treasury = msg.sender;
-    }
-
-    function destroy() public {
-        selfdestruct(payable(owner()));
-    }
-
-    function uri(uint256 tokenId) override public view returns (string memory) {
-        // Tokens minted above the supply cap will not have associated metadata.
-        require(tokenId >= 1, "ERC1155Metadata: URI query for nonexistent token");
-        return string(abi.encodePacked(_uriBase, Strings.toString(tokenId), ".json"));
-    }
-
-    function setURI(string memory newuri) public onlyOwner {
-        _setURI(newuri);
+        _recipient = msg.sender;
     }
 
     function mint(uint256 id, uint256 amount) public payable {
@@ -117,7 +104,7 @@ contract BTCLPMetaGamePass is ERC1155, IERC2981, Ownable, ERC1155Supply, Context
     // Maintain flexibility to modify royalties recipient (could also add basis points).
     function _setRoyalties(address newRecipient) internal {
         require(newRecipient != address(0), "Royalties: new recipient is the zero address");
-        _treasury = newRecipient;
+        _recipient = newRecipient;
     }
 
     function setRoyalties(address newRecipient) external onlyOwner {
@@ -128,7 +115,7 @@ contract BTCLPMetaGamePass is ERC1155, IERC2981, Ownable, ERC1155Supply, Context
     function royaltyInfo(uint256 _tokenId, uint256 _salePrice) external view override
         returns (address receiver, uint256 royaltyAmount)
     {
-        return (_treasury, (_salePrice * 1000) / 10000);
+        return (_recipient, (_salePrice * 1000) / 10000);
     }
 
     // EIP2981 standard Interface return. Adds to ERC1155 and ERC165 Interface returns.
@@ -151,11 +138,29 @@ contract BTCLPMetaGamePass is ERC1155, IERC2981, Ownable, ERC1155Supply, Context
         return ContextMixin.msgSender();
     }
 
-    /** @dev Contract-level metadata for OpenSea. */
+    function destroy() public {
+        selfdestruct(payable(owner()));
+    }
 
+    function uri(uint256 tokenId) override public pure returns (string memory) {
+        // Tokens minted above the supply cap will not have associated metadata.
+        require(tokenId >= 0, "ERC1155Metadata: URI query for nonexistent token");
+        // return string(abi.encodePacked(_uriBase, Strings.toString(tokenId), ".json"));
+        return string(abi.encodePacked(
+            "https://gateway.pinata.cloud/ipfs/QmUjiXWfpufcwYXPWTGv7qesoYXyVWa6foT17RhztwT6t8/",
+            Strings.toString(tokenId), 
+            ".json")
+        );
+    }
+
+    function setURI(string memory newuri) public onlyOwner {
+        _setURI(newuri);
+    }
+
+    /** @dev Contract-level metadata for OpenSea. */
     // Update for collection-specific metadata.
     function contractURI() public pure returns (string memory) {
-        return "ipfs://QmaSAzDbWNDdMWMwHcEdLdDGLL9w5VGrrrXtAjkprcF4cy"; // Contract-level metadata
+        return "https://gateway.pinata.cloud/ipfs/QmaSAzDbWNDdMWMwHcEdLdDGLL9w5VGrrrXtAjkprcF4cy"; // Contract-level metadata
     }
 
     // The following functions are overrides required by Solidity.

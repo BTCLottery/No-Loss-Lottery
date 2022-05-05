@@ -15,7 +15,10 @@
     "testBscTestnet": "npx hardhat --network bscTestnet test",
     "testForkVerbose": "npx hardhat --network hardhat test --verbose --show-stack-traces",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "deployNFTsOnRinkeby": "npx hardhat run --network rinkeby scripts/deployNFTs.js",
+    "buyNFTsOnRinkeby": "npx hardhat run --network rinkeby scripts/buyNFTs.js",
+    "verifyNFTsOnRinkeby": "npx hardhat verify '0x88D3aA76d84ea43367c9739d3BaB2B10e12ae97b' --network rinkeby"
   },
   "keywords": [],
   "author": "",
