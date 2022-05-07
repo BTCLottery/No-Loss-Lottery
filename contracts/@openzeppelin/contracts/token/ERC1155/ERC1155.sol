@@ -47,7 +47,7 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
     constructor(string memory uri_) {
         _setURI(uri_);
         // Set metadata pin for uri override and permanentURI events
-        _uriBase = "ipfs://bafybeiemjjonfcpfw6uy6avgivohjtjew25yfnsj55og6uoa5cnzcckmxu/";
+        _uriBase = "ipfs://bafybeicx34qdl2eg4wczlmbd6g7v7ww57meqdzdbhxtt6usdppgbb7r7aa/";
         // Set maximum editions per token
         _editionLimit = 10;
     }
