@@ -1,22 +1,23 @@
 {
+    "id": 0,
     "name": "Common",
-    "description": "A unique chance to get a key that opens a world of possibilities in the decentralized random entropy universe. The BTCLP (Meta Game Pass) allows holders to participate automatically in the daily No Loss Games and have a chance to win DAO Tokens.",
-    "image": "https://bafybeibro5ggimqctcjcvytfq5csevgbesfddsh4yhf6noft6p7ulmsin4.ipfs.dweb.link/common.gif",
+    "description": "A unique chance to get a key that opens a world of possibilities in the decentralized lottery universe. The BTCLP (Meta Game Pass) gives a chance to win BTCLP Governance Tokens by automatically participating in the Daily No Loss Lottery.",
+    "image": "https://bafybeibro5ggimqctcjcvytfq5csevgbesfddsh4yhf6noft6p7ulmsin4.ipfs.dweb.link/common.mp4",
     "attributes": [
         {
-          "trait_type": "ACCESS TYPE", 
-          "value": "Unlimited"
-        },
-        {
-          "trait_type": "Duration", 
+          "trait_type": "Nickname Blue Highlight", 
           "value": "Lifetime"
         },
         {
-          "trait_type": "NLL Participation", 
+          "trait_type": "Daily No Loss Lottery", 
           "value": "Lifetime"
         },
         {
-          "trait_type": "Custom Game Creation", 
+          "trait_type": "Random Common Avatar", 
+          "value": "Lifetime"
+        },
+        {
+          "trait_type": "Launchpad", 
           "value": "Lifetime"
         }
     ]

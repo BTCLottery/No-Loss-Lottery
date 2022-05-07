@@ -2,7 +2,7 @@ const hre = require("hardhat");
 
 async function main() {
   // We get the contract to deploy
-  const BTCLPMetaGamePassRoyalties = await hre.ethers.getContractFactory("ParkPics");
+  const BTCLPMetaGamePassRoyalties = await hre.ethers.getContractFactory("BTCLPMetaGamePass");
   const gamepass = await BTCLPMetaGamePassRoyalties.deploy();
   await gamepass.deployed();
 

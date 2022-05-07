@@ -18,7 +18,7 @@
     "lint:fix": "eslint . --fix",
     "deployNFTsOnRinkeby": "npx hardhat run --network rinkeby scripts/deployNFTs.js",
     "buyNFTsOnRinkeby": "npx hardhat run --network rinkeby scripts/buyNFTs.js",
-    "verifyNFTsOnRinkeby": "npx hardhat verify '0x88D3aA76d84ea43367c9739d3BaB2B10e12ae97b' --network rinkeby"
+    "verifyNFTsOnRinkeby": "npx hardhat verify '0xB9dB4bB0CeEa651B04A04797c4774B262d46f988' --network rinkeby"
   },
   "keywords": [],
   "author": "",

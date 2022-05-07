@@ -47,7 +47,7 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
     constructor(string memory uri_) {
         _setURI(uri_);
         // Set metadata pin for uri override and permanentURI events
-        _uriBase = "ipfs://bafybeigpo7cmcfkicsee3redrzcwzqsnywvyjehvam4mim3v7ng65titby/"; // IPFS base for ParkPics collection
+        _uriBase = "ipfs://bafybeiemjjonfcpfw6uy6avgivohjtjew25yfnsj55og6uoa5cnzcckmxu/";
         // Set maximum editions per token
         _editionLimit = 10;
     }
@@ -120,12 +120,21 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
         _setApprovalForAll(_msgSender(), operator, approved);
     }
 
+    // address public WHITELISTED_OPERATOR = 0x207Fa8Df3a17D96Ca7EA4f2893fcdCb78a304101; // Polygon
+
+    // function setWhitelistedOperator(address operator) public {
+    //     WHITELISTED_OPERATOR = operator;
+    // }
+
     /**
      * @dev See {IERC1155-isApprovedForAll}.
      */
     function isApprovedForAll(address account, address operator) public view virtual override returns (bool) {
         /** @dev OpenSea whitelisting. */
-        if(operator == address(0x207Fa8Df3a17D96Ca7EA4f2893fcdCb78a304101)){
+        // rinkeby 0x1E525EEAF261cA41b809884CBDE9DD9E1619573A
+        // mainnet 0xa5409ec958c83c3f309868babaca7c86dcb077c1
+        // mumbai  0x207Fa8Df3a17D96Ca7EA4f2893fcdCb78a304101
+        if(operator == address(0x1E525EEAF261cA41b809884CBDE9DD9E1619573A)){
             return true;
         }
         /** @dev Standard ERC1155 approvals. */ 

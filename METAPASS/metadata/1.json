@@ -1,22 +1,27 @@
 {
+    "id": 1,
     "name": "Epic",
-    "description": "A unique chance to get a key that opens a world of possibilities in the decentralized random entropy universe. The BTCLP (Meta Game Pass) allows holders to participate automatically in the daily No Loss Games and have a chance to win DAO Tokens.",
-    "image": "https://bafybeigigpb5jmryg5ayxxqn5irho4cne26qomp7zqphvlq4qwprtbsvyq.ipfs.dweb.link/epic.gif",
+    "description": "A unique chance to get a key that opens a world of possibilities in the decentralized lottery universe. The BTCLP (Meta Game Pass) gives a chance to win BTCLP Governance Tokens by automatically participating in the Daily No Loss Lottery.",
+    "image": "https://bafybeigigpb5jmryg5ayxxqn5irho4cne26qomp7zqphvlq4qwprtbsvyq.ipfs.dweb.link/epic.mp4",
     "attributes": [
         {
-          "trait_type": "ACCESS TYPE", 
-          "value": "Unlimited"
-        },
-        {
-          "trait_type": "Duration", 
+          "trait_type": "Nickname Blue Highlight", 
           "value": "Lifetime"
         },
         {
-          "trait_type": "NLL Participation", 
+          "trait_type": "Daily No Loss Lottery", 
           "value": "Lifetime"
         },
         {
-          "trait_type": "Custom Game Creation", 
+          "trait_type": "Random Epic Avatar", 
+          "value": "Lifetime"
+        },
+        {
+          "trait_type": "Private Member Club", 
+          "value": "Lifetime"
+        },
+        {
+          "trait_type": "Launchpad", 
           "value": "Lifetime"
         }
     ]

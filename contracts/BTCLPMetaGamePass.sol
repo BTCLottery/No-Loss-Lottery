@@ -1,17 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
+import "./@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import "./@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
+import "./@openzeppelin/contracts/interfaces/IERC2981.sol";
+import "./@openzeppelin/contracts/access/Ownable.sol";
+import "./@openzeppelin/contracts/security/Pausable.sol";
+import "./@openzeppelin/contracts/utils/Strings.sol";
+import "./@openzeppelin/contracts/utils/ContextMixin.sol";
 
-contract BTCLPMetaGamePass is ERC1155, Ownable, ERC1155Supply { 
-    // 0x4715aCa23Edad68C64139f6C43C8652Aa5616801
-    // 0x439356Ad40D2f2961c99FFED4453f482AEC453Af
+contract BTCLPMetaGamePass is ERC1155, IERC2981, Ownable, ERC1155Supply, ContextMixin { 
+    using Strings for uint256;
 
-    // OPENSEA - Royalties 10% (5% TEAM / 5% HODLERS)
-    // LOOKSRARE - Royalties 10% (5% TEAM / 5% HODLERS)
+    string public constant name = "Bitcoin Lottery Protocol Meta Game Pass";
+    string public constant symbol = "BLPMGP";
+    address private _treasury;
 
     uint256 public constant COMMON = 0;
     uint256 public constant EPIC = 1;
@@ -21,16 +24,15 @@ contract BTCLPMetaGamePass is ERC1155, Ownable, ERC1155Supply {
     uint256 public constant EPIC_SUPPLY = 2000;
     uint256 public constant LEGENDARY_SUPPLY = 1000;
 
+    uint256 private constant DURATION = 10 days;
+
     uint256 public timeDeployed;
     uint256 public allowMintingAfter;
     
-    string public name = "Bitcoin Lottery Protocol (GAME PASS)";
-    string public symbol = "BLPGP";
-
     constructor(
         // uint256 _allowMintingOn,
         // string memory url
-        ) ERC1155("https://gateway.pinata.cloud/ipfs/QmSXi4vWjUi5oQW5XJCKiRX7RVbnBE6G68Hu419y6Uu9tk") {
+        ) ERC1155("") {
 
         uint256 _allowMintingOn = block.timestamp; // remove in production
 
@@ -39,21 +41,17 @@ contract BTCLPMetaGamePass is ERC1155, Ownable, ERC1155Supply {
         }
 
         timeDeployed = block.timestamp;
-        // _setURI(url);
+        _treasury = msg.sender;
     }
 
     function destroy() public {
         selfdestruct(payable(owner()));
     }
 
-    function uri(uint256 _tokenId) override public pure returns (string memory) {
-        return string(
-            abi.encodePacked(
-                "https://gateway.pinata.cloud/ipfs/QmSXi4vWjUi5oQW5XJCKiRX7RVbnBE6G68Hu419y6Uu9tk/",
-                Strings.toString(_tokenId),
-                ".json"
-            )
-        );
+    function uri(uint256 tokenId) override public view returns (string memory) {
+        // Tokens minted above the supply cap will not have associated metadata.
+        require(tokenId >= 0, "ERC1155Metadata: URI query for nonexistent token");
+        return string(abi.encodePacked(_uriBase, Strings.toString(tokenId), ".json"));
     }
 
     function setURI(string memory newuri) public onlyOwner {
@@ -116,6 +114,50 @@ contract BTCLPMetaGamePass is ERC1155, Ownable, ERC1155Supply {
         require(success);
     }
 
+    /** @dev EIP2981 royalties implementation. */
+
+    // Maintain flexibility to modify royalties recipient (could also add basis points).
+    function _setRoyalties(address newRecipient) internal {
+        require(newRecipient != address(0), "Royalties: new recipient is the zero address");
+        _treasury = newRecipient;
+    }
+
+    function setRoyalties(address newRecipient) external onlyOwner {
+        _setRoyalties(newRecipient);
+    }
+
+    // EIP2981 standard royalties return.
+    function royaltyInfo(uint256 _tokenId, uint256 _salePrice) external view override
+        returns (address receiver, uint256 royaltyAmount)
+    {
+        return (_treasury, (_salePrice * 1000) / 10000);
+    }
+
+    // EIP2981 standard Interface return. Adds to ERC1155 and ERC165 Interface returns.
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(ERC1155, IERC165)
+        returns (bool)
+    {
+        return (
+            interfaceId == type(IERC2981).interfaceId ||
+            super.supportsInterface(interfaceId)
+        );
+    }
+
+    /** @dev Meta-transactions override for OpenSea. */
+    function _msgSender() internal override view returns (address) {
+        return ContextMixin.msgSender();
+    }
+
+    /** @dev Contract-level metadata for OpenSea. */
+    // Update for collection-specific metadata.
+    function contractURI() public pure returns (string memory) {
+        return "ipfs://QmTnq4ZSUqAuqerZtrhatrBAHYkUzjgFhxwZyBpA5aBz93"; // Contract-level metadata
+    }
+
     // The following functions are overrides required by Solidity.
     function _beforeTokenTransfer(address operator, address from, address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data)
         internal
@@ -123,4 +165,5 @@ contract BTCLPMetaGamePass is ERC1155, Ownable, ERC1155Supply {
     {
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
     }
+    
 }
