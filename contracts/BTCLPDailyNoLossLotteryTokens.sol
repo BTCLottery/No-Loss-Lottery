@@ -12,17 +12,12 @@ import "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 
-contract BTCLPDailyNoLossLotteryV3 is Context, Ownable, ReentrancyGuard, VRFConsumerBaseV2, KeeperCompatible {
+contract BTCLPDailyNoLossLotteryV2 is Context, Ownable, ReentrancyGuard, VRFConsumerBaseV2, KeeperCompatible {
     using SafeERC20 for IERC20;
     
-    // DAILY PRIZE 100.000 BTCLP & 1000 NLL
-    // HOW TO PLAY
-    // [] 1. HOLD NFT - Only BTCLP & NLL work for now need to add Meta Game Passes
-    // [] 2. BUY WITH BTCLP Token - you can always reclaim your BTCLP winnings at the end of every game
-    // [] 3. BUY WITH NLL Token - can only be spent in the No Loss Lotteries = 1 Burned NLL equals 1 TICKET
-
-    IERC20 private btclpToken;
-    IERC20 private nllToken;
+    IERC20 private btclpToken; // GET TOKENS BACK AFTER THE GAME ENDS
+    IERC20 private nllToken;   // TOKENS ARE BURNED AFTER USE
+    // IERC20 private nllToken;   // NFTS AUTOMATICALLY SUBSCRIBE YOU TO THE NLL
 
     VRFCoordinatorV2Interface COORDINATOR;
     LinkTokenInterface LINKTOKEN;
@@ -47,56 +42,45 @@ contract BTCLPDailyNoLossLotteryV3 is Context, Ownable, ReentrancyGuard, VRFCons
         uint256 endDate;                            // Current Round End Date
         uint256 totalUniquePlayers;                 // Total Unique Players in active round
         uint256 totalTickets;                       // Total Tickets Bought in active round
-        uint256[] luckyTickets;                     // Lucky Tickets are drawn every round (you can win multiple times with 1 ticket)
-        address[] winners;                          // Lucky Addresses of Lucky Winnings Tickets
+        uint256[10] luckyTickets;                   // 10 Lucky Tickets are drawn every round (you can win multiple times with 1 ticket)
+        address[10] winners;                        // 10 Lucky Addresses of 10 Lucky Winnings Tickets
         mapping (uint256 => address) ticketNr;      // Get Players Addresses from their Ticket Numbers 
         mapping (address => uint256) totalBTCLP;    // Total BTCLP Contributed in active round
         mapping (address => uint256) totalNLL;      // Total NLL Contributed in active round
         mapping (address => bool) isUnique;         // Check if Player is Unique in current round
     }
 
-    mapping(uint => mapping(uint => Round)) public rounds;
-    uint256 public dailyRound;
-    uint256 public weeklyRound;
-    uint256 public monthlyRound;
-
-    // DAILY JACKPOT ROUND
-    uint256 public igoEndBlock = block.number; // 15 May 2022
-    uint256 public unclaimedTokens; // total BTCLP Tokens that can be claimed
-    uint256 private blocksPerDay = 28700; // for BSC // 6446 for Rinkeby // 43200 for MATIC
-    uint256 private dailyBtclpEntry = 1200 * 1e18; // 1200 BTCLP per Ticket and can be claimed at the end
-    uint256 private weeklyBtclpEntry = 1200 * 1e18; // 1200 BTCLP per Ticket and can be claimed at the end
-    uint256 private monthlyBtclpEntry = 1200 * 1e18; // 1200 BTCLP per Ticket and can be claimed at the end
-    uint256 private nllEntry = 1e18; // 1 NLL Token per Ticket but get's burned after use
-    uint16 private requestConfirmations = 10; // Min Blocks after 
-    uint32 private callbackGasLimit = 100000; // Amount of gas used for Chainlink Keepers Network calling Chainlink VRF V2 Randomness Function
-    uint32 private numWords = 1;  // Request 10 Random bytes32
-    uint64 public subscriptionId; // Chainlink Subscription ID
-    bool public finalRound; // Last round 
+    mapping(uint => Round) public rounds;
 
     // CHAINLINK BSC - VRF V2
     address public vrfCoordinator = 0x6A2AAd07396B36Fe02a22b33cf443582f682c82f; // 0x6168499c0cFfCaCD319c818142124B7A15E857ab; // Rinkeby
     address public link = 0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06; // 0x01BE23585060835E02B77ef475b0Cc51aA1e0709; // Rinkeby
     bytes32 public keyHash = 0xd4bb89654db74673a187bd804519e65e3f71a52bc55f11da7601a13dcf505314; // 0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc; // Rinkeby
 
+    // DAILY JACKPOT ROUND
+    uint256 public round;
+    uint256 public igoEndBlock = block.number; // 15 May 2022
+    uint256 public unclaimedTokens;            // total BTCLP Tokens that can be claimed
+    uint256 private blocksPerDay = 28700;      // for BSC // 6446 for Rinkeby // 43200 for MATIC
+    uint256 private btclpEntry = 1200 * 1e18;  // 1200 BTCLP per Ticket and can be claimed at the end
+    uint256 private nllEntry = 1e18;           // 1 NLL Token per Ticket but get's burned after use
+    uint16 private requestConfirmations = 3;   // Min Blocks after 
+    uint32 private callbackGasLimit = 100000;  // Amount of gas used for Chainlink Keepers Network calling Chainlink VRF V2 Randomness Function
+    uint32 private numWords = 1;               // Request 10 Random bytes32
+    uint64 public subscriptionId;              // Chainlink Subscription ID
+    bool public finalRound;                    // Last round 
+
     constructor(IERC20 _btclpToken, IERC20 _nllToken) VRFConsumerBaseV2(vrfCoordinator) {
         btclpToken = _btclpToken;
         nllToken = _nllToken;
-        dailyRound = 1;
-        weeklyRound = 1;
-        monthlyRound = 1;
+        round = 1;
+        rounds[round].lotteryStatus = Status.Open;
+        rounds[round].startDate = block.timestamp;
+        // rounds[round].endDate = rounds[round].startDate.addDays(1); // PRODUCTION
+        rounds[round].endDate = addMinutes(rounds[round].startDate, 4); // 4 minutes
         COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
         LINKTOKEN = LinkTokenInterface(link);
         createNewSubscription();
-
-        for(uint i = 0; i <= 2; i++){
-            rounds[i][1].lotteryStatus = Status.Open; // Status Open for Daily/Weekly/Monthly
-            rounds[i][1].startDate = block.timestamp; // Set start time for all 3 Lotteries
-            if(i == 0) rounds[i][1].endDate = addHours(rounds[i][dailyRound].startDate, 24); // 24 hours
-            if(i == 1) rounds[i][1].endDate = addDays(rounds[i][weeklyRound].startDate, 7);   // 7 days
-            if(i == 2) rounds[i][1].endDate = addMonths(rounds[i][monthlyRound].startDate, 1); // 1 month
-        }
-
     }
 
     // Create a new subscription when the contract is initially deployed.
@@ -139,10 +123,8 @@ contract BTCLPDailyNoLossLotteryV3 is Context, Ownable, ReentrancyGuard, VRFCons
      * @dev Get 1 Ticket Price with BTCLP Tokens.
      * @custom:time every hour chance entry price increases by 50 BTCLP Tokens
      */
-    function getBtclpPrice(bytes memory _data) public view returns (uint ticketPrice) {
-        if(_data == "0x00") return dailyBtclpEntry + (50 * (diffHours(rounds[0][dailyRound].startDate, block.timestamp) * 1e18));
-        if(_data == "0x01") return dailyBtclpEntry + (1200 * (diffDays(rounds[1][weeklyRound].startDate, block.timestamp) * 1e18));
-        if(_data == "0x02") return dailyBtclpEntry + (1200 * (diffDays(rounds[2][monthlyRound].startDate, block.timestamp) * 1e18));
+    function getBtclpPrice() public view returns (uint ticketPrice) {
+        return btclpEntry + (50 * (diffHours(rounds[round].startDate, block.timestamp) * 1e18));
     }
 
     function addMinutes(uint timestamp, uint _minutes) internal pure returns (uint newTimestamp) {
@@ -162,20 +144,13 @@ contract BTCLPDailyNoLossLotteryV3 is Context, Ownable, ReentrancyGuard, VRFCons
         uint SECONDS_PER_HOUR = 60 * 60; // 3600
         _hours = (toTimestamp - fromTimestamp) / SECONDS_PER_HOUR;
     }
-    
-    function diffDays(uint fromTimestamp, uint toTimestamp) internal pure returns (uint _hours) {
-        require(fromTimestamp <= toTimestamp);
-        uint SECONDS_PER_DAY = 60 * 60 * 24; // 86400
-        _hours = (toTimestamp - fromTimestamp) / SECONDS_PER_DAY;
-    }
 
     /**
      * @dev Get Round Winners
      * returns luckyTickets and luckyWinners
      */
-    function getWinners(uint gameType, uint roundNr) public view returns (uint256[10] memory luckyTicket, address[10] memory luckyWinner) {
-        require(gameType <= 2, "There are only 3 games Daily/Weekly/Monthly");
-        return (rounds[gameType][roundNr].luckyTickets, rounds[gameType][roundNr].winners);
+    function getWinners(uint roundNr) public view returns (uint256[10] memory luckyTicket, address[10] memory luckyWinner) {
+        return (rounds[roundNr].luckyTickets, rounds[roundNr].winners);
     }
 
     /**
@@ -183,7 +158,7 @@ contract BTCLPDailyNoLossLotteryV3 is Context, Ownable, ReentrancyGuard, VRFCons
      * @param roundNr Desired round number.
      * returns claimed BTCL Tokens.
      */
-    function claim(uint gameType, uint roundNr) public nonReentrant returns (uint256 claimedBTCL, uint256 claimedNLL) {
+    function claim(uint roundNr) public nonReentrant returns (uint256 claimedBTCL, uint256 claimedNLL) {
         require(roundNr > round, "Wait until round finishes");
         uint btclpTokens = 0;
         uint nllTokens = 0;
@@ -305,6 +280,9 @@ contract BTCLPDailyNoLossLotteryV3 is Context, Ownable, ReentrancyGuard, VRFCons
         }
         (bool success,) = address(btclpToken).call(abi.encodeWithSignature("burn(uint256)",toBurn));
         require(success,"burn FAIL");
+        // btclpToken.burn(address(this), toBurn);
+        // btclpToken.burn(toBurn);
+        // btclpToken.transfer(burnContract, toBurn);
         rounds[round].lotteryStatus = Status.Completed;
         rounds[round].randomResult = randomness;
         rounds[round].requestId = requestId;
@@ -338,6 +316,48 @@ contract BTCLPDailyNoLossLotteryV3 is Context, Ownable, ReentrancyGuard, VRFCons
             toBurn = contractBalance / 2;
             isFinalRound = true;
         }
+    }
+
+    /**
+     * @dev ChainLink Keepers function that checks if round draw conditions have been met and initiates draw when they are true.
+     * return bool upkeepNeeded if random winning tickets are ready to be drawn.
+     * return bytes performData contain the current encoded round number.
+     */
+    function checkUpkeep(bytes calldata /* checkData */) external view override returns (bool upkeepNeeded, bytes memory performData) {
+        upkeepNeeded = 
+            subMinutes(rounds[round].endDate, 2) <= block.timestamp &&
+            rounds[round].requestId == 0 &&
+            rounds[round].lotteryStatus == Status.Open && 
+            rounds[round].lotteryStatus != Status.Completed && 
+            // rounds[round].totalUniquePlayers >= 2 && 
+            rounds[round].totalTickets >= 10;
+        performData = abi.encode(round);
+    }
+
+    /**
+     * @dev ChainLink Keepers function that is executed by the Chainlink Keeper.
+     * @param performData encoded round number sent over from checkUpKeep
+     */
+    function performUpkeep(bytes calldata performData) external override {
+        uint256 verifyRound = abi.decode(performData, (uint256));
+        require(verifyRound == round, "Round mismatch.");
+        require(
+            block.timestamp >= subMinutes(rounds[round].endDate, 2) && 
+            rounds[round].lotteryStatus == Status.Open && 
+            rounds[round].lotteryStatus != Status.Completed && 
+            // rounds[round].totalUniquePlayers >= 2 && 
+            rounds[round].totalTickets >= 10, 
+            "Could not draw winnings tickets."
+        );
+        rounds[round].lotteryStatus == Status.Closed;
+        emit LotteryClose(round, rounds[round].totalTickets, rounds[round].totalUniquePlayers);
+        COORDINATOR.requestRandomWords(
+            keyHash,
+            subscriptionId,
+            requestConfirmations,
+            callbackGasLimit,
+            numWords
+        );
     }
 
     /**
@@ -382,9 +402,8 @@ contract BTCLPDailyNoLossLotteryV3 is Context, Ownable, ReentrancyGuard, VRFCons
     function onTokenTransfer(address _wallet, uint256 _value, bytes memory _data) public {
         // address parsed;
         // assembly {parsed := mload(add(_data, 32))}
-        require(_data == "0x00" || _data == "0x01" || _data == "0x02", "0x00 means daily | 0x01 means weekly | 0x02 means monthly");
-        require(finalRound == false, "The daily BTCLP No Loss Lottery has successfully distributed all 1.200.030.000 BTCLP Tokens!");
-        uint ticketPrice = getBtclpPrice(_data);
+        require(finalRound == false, "The daily BTCLP No Loss Lottery has successfully distributed all 401.500.000 BTCLP Tokens!");
+        uint ticketPrice = getBtclpPrice();
         buyTicket(_wallet, _value, ticketPrice, round, _data);
     }
 
@@ -397,13 +416,17 @@ contract BTCLPDailyNoLossLotteryV3 is Context, Ownable, ReentrancyGuard, VRFCons
         }
         // BUY TICKET WITH BTCLP
         if(_msgSender() == address(btclpToken)) {
-            _buyTickets(_wallet, _value / _btclpEntryPrice, _value, _btclpEntryPrice);
+            require(_value % _btclpEntryPrice == 0, "The Daily No Loss Lottery accepts multiple 1200 BTCLP + Hourly increases of 50 BTCLP for each chance.");
+            require(_value / _btclpEntryPrice <= 250, "Max 250 Tickets can be reserved at once using BTCLP Tokens.");
+            _addTickets(_wallet, _value / _btclpEntryPrice);
             rounds[_round].totalBTCLP[_wallet] = rounds[_round].totalBTCLP[_wallet] + _value;
             unclaimedTokens += _value;
             emit TicketsPurchased(address(btclpToken), _wallet, _value, _data);
         // BUY TICKET WITH NLL
         } else if (_msgSender() == address(nllToken)) {
-            _buyTickets(_wallet, _value / nllEntry, _value, nllEntry);
+            require(_value % nllEntry == 0, "1 NLL Token = 1 Chance at any time.");
+            require(_value / nllEntry <= 250, "Max 250 Tickets can be reserved at once using NLL Tokens.");
+            _addTickets(_wallet, _value / nllEntry);
             rounds[_round].totalNLL[_wallet] = rounds[_round].totalNLL[_wallet] + _value;
             // if(block.number >= igoEndBlock + blocksPerDay) {
                 (bool success,) = address(nllToken).call(abi.encodeWithSignature("burn(uint256)",_value));
@@ -421,57 +444,13 @@ contract BTCLPDailyNoLossLotteryV3 is Context, Ownable, ReentrancyGuard, VRFCons
      * @param _wallet The player address that sent tokens to the BTCLP Daily No Loss Lottery Contract.
      * @param _totalTickets The amount of tokens sent by the player to the BTCLP Daily No Loss Lottery Contract.
      */
-    function _buyTickets(address _wallet, uint _totalTickets, uint _value, uint _entry) private {
-        require(_value % _entry == 0, "Tickets Multipler works only with multiplied price and 0 remainder tokens.");
-        require(_value / _entry <= 250, "Max 250 Tickets can be reserved at once.");
+    function _addTickets(address _wallet, uint _totalTickets) private {
         Round storage activeRound = rounds[round];
         uint total = activeRound.totalTickets;
         for(uint i = 1; i <= _totalTickets; i++){
             activeRound.ticketNr[total + i] = _wallet;
         }
         activeRound.totalTickets = total + _totalTickets;
-    }
-
-    /**
-     * @dev ChainLink Keepers function that checks if round draw conditions have been met and initiates draw when they are true.
-     * return bool upkeepNeeded if random winning tickets are ready to be drawn.
-     * return bytes performData contain the current encoded round number.
-     */
-    function checkUpkeep(bytes calldata /* checkData */) external view override returns (bool upkeepNeeded, bytes memory performData) {
-        upkeepNeeded = 
-            subMinutes(rounds[round].endDate, 2) <= block.timestamp &&
-            rounds[round].requestId == 0 &&
-            rounds[round].lotteryStatus == Status.Open && 
-            rounds[round].lotteryStatus != Status.Completed && 
-            // rounds[round].totalUniquePlayers >= 2 && 
-            rounds[round].totalTickets >= 10;
-        performData = abi.encode(round);
-    }
-
-    /**
-     * @dev ChainLink Keepers function that is executed by the Chainlink Keeper.
-     * @param performData encoded round number sent over from checkUpKeep
-     */
-    function performUpkeep(bytes calldata performData) external override {
-        uint256 verifyRound = abi.decode(performData, (uint256));
-        require(verifyRound == round, "Round mismatch.");
-        require(
-            block.timestamp >= subMinutes(rounds[round].endDate, 2) && 
-            rounds[round].lotteryStatus == Status.Open && 
-            rounds[round].lotteryStatus != Status.Completed && 
-            // rounds[round].totalUniquePlayers >= 2 && 
-            rounds[round].totalTickets >= 10, 
-            "Could not draw winnings tickets."
-        );
-        rounds[round].lotteryStatus == Status.Closed;
-        emit LotteryClose(round, rounds[round].totalTickets, rounds[round].totalUniquePlayers);
-        COORDINATOR.requestRandomWords(
-            keyHash,
-            subscriptionId,
-            requestConfirmations,
-            callbackGasLimit,
-            numWords
-        );
     }
 
 }

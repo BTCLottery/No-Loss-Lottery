@@ -11,9 +11,9 @@ import "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.so
 contract BTCLPGovernor is Governor, GovernorSettings, GovernorCountingSimple, GovernorVotes, GovernorVotesQuorumFraction, GovernorTimelockControl {
     constructor(IVotes _token, TimelockController _timelock)
         Governor("Bitcoin Lottery Protocol Governor")
-        GovernorSettings(6545 /* 1 day */, 45818 /* 1 week */, 100000e18)
+        GovernorSettings(1 /* 1 block */, 45818 /* 1 week */, 0)
         GovernorVotes(_token)
-        GovernorVotesQuorumFraction(5)
+        GovernorVotesQuorumFraction(4)
         GovernorTimelockControl(_timelock)
     {}
 

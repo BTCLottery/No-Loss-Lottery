@@ -1,5 +1,8 @@
 require("dotenv").config();
 
+require("hardhat-deploy");
+require("@nomiclabs/hardhat-ethers");
+
 require("@nomiclabs/hardhat-etherscan");
 require("@nomiclabs/hardhat-waffle");
 require("hardhat-gas-reporter");
@@ -97,9 +100,21 @@ module.exports = {
       },
       {
         version: "0.6.12",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        }
       },
       {
-        version: "0.4.18"
+        version: "0.4.18",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        }
       }
     ]
   },

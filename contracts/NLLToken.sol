@@ -7,16 +7,14 @@ import "./utils/token/ERC677/ERC677Receiver.sol";
 
 contract NLLToken is Ownable, MinimalERC20 {
     mapping(address => bool) public igoAndNoLossLotteries;
-    uint256 maxSupply = 1000000e18;
+    uint256 maxSupply = 1000000 * 1e18;
 
     modifier onlyNoLossLotteries() {
       require(igoAndNoLossLotteries[_msgSender()] == true);
       _;
     }
 
-    constructor() MinimalERC20("NLL Token", "NLL") {
-      // _mint(_msgSender(), 1000 * 10 ** decimals());
-    }
+    constructor() MinimalERC20("NLL Token", "NLL") {}
 
     function setNoLossLotteries(address nllAddress, bool status) public onlyOwner {
         igoAndNoLossLotteries[nllAddress] = status;

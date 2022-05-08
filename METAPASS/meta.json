@@ -1,6 +1,6 @@
 {
     "name": "Bitcoin Lottery Protocol Meta Game Pass",
-    "description": "The Bitcoin Lottery Protocol bridges the gap between players and game creators by enabling trustless drawings. Play Randomized Games that are backup up by Chainlink or become a member and create your own NFTs, Utility and DAO Governance Tokens distributions using the No Loss Lottery Deflationary Distribution Launchpad.",
+    "description": "The Bitcoin Lottery Protocol trustless drawings bridges the gap between players and game creators. Games are backed up by the full power of Chainlink VRF Random Number Generator and Chainlink Keepers. Become a member and create your own Games, NFTs, Utility Token, Governance Tokens and No Loss Lottery Deflationary Distribution Mechanism with the help of the Lottery Chain Launchpad.",
     "image": "https://bafybeidz2a6fiqnbcxfcv7rvq2g46hxw5xsupbk72lqclbpanal2nzx4s4.ipfs.dweb.link/",
     "external_link": "https://btclottery.io",
     "seller_fee_basis_points": 1000,
