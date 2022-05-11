@@ -20,8 +20,8 @@ contract TokenLock {
 
     /**
      * @dev Constructor.
-     * @param _token The token this contract will lock.l
-     * @param _unlockBegin The time at which unlocking of tokens will be gin.
+     * @param _token The token this contract will lock
+     * @param _unlockBegin The time at which unlocking of tokens will begin.
      * @param _unlockCliff The first time at which tokens are claimable.
      * @param _unlockEnd The time at which the last token will unlock.
      */

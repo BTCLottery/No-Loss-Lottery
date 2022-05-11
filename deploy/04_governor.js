@@ -13,12 +13,11 @@ module.exports = async ({getNamedAccounts, deployments}) => {
       args: [BTCLPToken.address, TimeLock.address],
       log: true,
     });
-    // const governor = await ethers.getContract('ENSGovernor');
     log(`04 - Deployed 'BTCLPGovernor' at ${governor.address}`);
     await (await TimeLock.grantRole(await TimeLock.PROPOSER_ROLE(), governor.address)).wait();
     await (await TimeLock.revokeRole(await TimeLock.TIMELOCK_ADMIN_ROLE(), deployer)).wait();
     return true;
 };
-module.exports.tags = ['all', 'BTCLPGovernor'];
+module.exports.tags = ['BTCLPGovernor'];
 module.exports.dependencies = ['BTCLPToken', 'TimeLock'];
 module.exports.id = 'BTCLPGovernor';
