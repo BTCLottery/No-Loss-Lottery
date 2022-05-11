@@ -33,7 +33,7 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
 
     // Mapping from token ID to global token editions and global limit
     mapping(uint256 => uint256) private _globalEditions;
-    uint256 private _editionLimit;
+    // uint256 private _editionLimit;
 
     // Mapping from account to operator approvals
     mapping(address => mapping(address => bool)) private _operatorApprovals;
@@ -49,7 +49,7 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
         // Set metadata pin for uri override and permanentURI events
         _uriBase = "ipfs://bafybeicx34qdl2eg4wczlmbd6g7v7ww57meqdzdbhxtt6usdppgbb7r7aa/";
         // Set maximum editions per token
-        _editionLimit = 10;
+        // _editionLimit = 10;
     }
 
     /**
@@ -295,7 +295,7 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
     ) internal virtual {
         require(to != address(0), "ERC1155: mint to the zero address");
         // Caps per token supply to 10 editions
-        require((_globalEditions[id] + amount) <= _editionLimit, "ERC1155: exceeded token maximum editions");
+        // require((_globalEditions[id] + amount) <= _editionLimit, "ERC1155: exceeded token maximum editions");
 
         address operator = _msgSender();
 
@@ -336,7 +336,7 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
 
         for (uint256 i = 0; i < ids.length; i++) {
             // Caps per token supply to 10 editions
-            require((_globalEditions[ids[i]] + amounts[i]) <= _editionLimit, "ERC1155: exceeded token maximum editions");
+            // require((_globalEditions[ids[i]] + amounts[i]) <= _editionLimit, "ERC1155: exceeded token maximum editions");
             
             _balances[ids[i]][to] += amounts[i];
             // Tracks number of editions per token

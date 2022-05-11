@@ -1,0 +1,23 @@
+module.exports = {
+    VOTING_DELAY: "1", // 1 block
+    VOTING_PERIOD: "45818", // 1 week in blocks
+    VOTING_PERCENTAGE: "4", // 4 percent
+    LOCKED_DAO_TOKENS: "5000000000", // 5 Billion BTCLP (50%)
+    MIN_DELAY: "3600",
+    EXECUTORS: [],
+    PROPOSERS: [],
+}
+
+
+
+// module.exports = {
+//     TOTAL_SUPPLY: "100000000",
+//     LOCKED_DAO_TOKENS: "45000000",
+//     TOTAL_CONTRIBUTOR_TOKENS: "25000000",
+//     UNLOCK_BEGIN: "2021-11-04",
+//     UNLOCK_CLIFF: "2022-05-04",
+//     UNLOCK_END: "2025-11-04",
+//     REGISTRY_ADDRESS: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+//     CLAIM_PERIOD_ENDS: "2022-05-04",
+//     MIN_TIMELOCK_DELAY: "172800"
+// };

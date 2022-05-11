@@ -86,5 +86,4 @@ describe("BTCLPToken", function () {
     expect(await this.btclp.allowance(minter, wallet)).to.equal(toWei("0"), "Should be equal to 0");
   });
   
-  
 });

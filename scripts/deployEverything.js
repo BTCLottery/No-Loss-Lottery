@@ -24,8 +24,8 @@ async function main() {
 
   // We deploy the Governor Contract
   // We deploy the Timelock Contract
-  // We deploy the Token No Loss Lottery
-  // We deploy the NFTs No Loss Lottery
+  // We deploy the Token Version of the No Loss Lottery
+  // We deploy the NFTs Version of the No Loss Lottery
 }
 
 // This pattern enables async/await everywhere and properly handles errors.
