@@ -29,19 +29,18 @@ contract BTCLPMetaGamePass is ERC1155, IERC2981, Ownable, ERC1155Supply, Context
 
     /** @dev Bitcoin Lottery Protocol Metaverse Game Pass
     * Unlocks future access and a daily chance to win BTCLP Governance Tokens & NLL Utility Tokens
-    * HODL any Meta Pass and participate daily in the Deflationary No Loss Lottery
-    * Backed by Chainlink Verifiable Random Function (VRF) & Chainlink Keepers
+    * HODL any Meta Pass and participate daily in the Deflationary DAO No Loss Lottery
+    * Backed by Chainlink Verifiable Random Function (VRF) & Chainlink Keepers  
+    * Reserved 500 Legendary Meta Passes for:
+    * 50 for Advisors, Influencers
+    * 100 for Team and Early Adopters
+    * 150 for Partnering Companies
+    * 200 for Future Governments
     */
     constructor(uint256 _allowMintingOn) ERC1155("") {
         allowMintingAfter = _allowMintingOn > block.timestamp ? _allowMintingOn - block.timestamp : block.timestamp;
         timeDeployed = block.timestamp;
         treasury = msg.sender;
-        
-        // * Preminted 500 Legendary Meta Passes and reserved for:
-        // * - 50 for Team and Early Adopters
-        // * - 50 for Advisors, Influencers
-        // * - 200 Partnering Companies
-        // * - 100 Future Governments
         _mint(msg.sender, 2, 500, "0x");
     }
 

@@ -33,7 +33,6 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
 
     // Mapping from token ID to global token editions and global limit
     mapping(uint256 => uint256) private _globalEditions;
-    // uint256 private _editionLimit;
 
     // Mapping from account to operator approvals
     mapping(address => mapping(address => bool)) private _operatorApprovals;
@@ -48,8 +47,6 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
         _setURI(uri_);
         // Set metadata pin for uri override and permanentURI events
         _uriBase = "ipfs://bafybeicx34qdl2eg4wczlmbd6g7v7ww57meqdzdbhxtt6usdppgbb7r7aa/";
-        // Set maximum editions per token
-        // _editionLimit = 10;
     }
 
     /**
@@ -129,16 +126,15 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
     /**
      * @dev See {IERC1155-isApprovedForAll}.
      */
-    function isApprovedForAll(address account, address operator) public view virtual override returns (bool) {
+    function isApprovedForAll(address owner, address operator) public view virtual override returns (bool) {
         /** @dev OpenSea whitelisting. */
-        // rinkeby 0x1E525EEAF261cA41b809884CBDE9DD9E1619573A
-        // mainnet 0xa5409ec958c83c3f309868babaca7c86dcb077c1
-        // mumbai  0x207Fa8Df3a17D96Ca7EA4f2893fcdCb78a304101
-        if(operator == address(0x1E525EEAF261cA41b809884CBDE9DD9E1619573A)){
-            return true;
-        }
-        /** @dev Standard ERC1155 approvals. */ 
-        return _operatorApprovals[account][operator];
+        if(operator == address(0xa5409ec958C83C3f309868babACA7c86DCB077c1)) { return true; } // mainnet
+        if(operator == address(0x207Fa8Df3a17D96Ca7EA4f2893fcdCb78a304101)) { return true; } // polygon
+        if(operator == address(0x1E525EEAF261cA41b809884CBDE9DD9E1619573A)) { return true; } // rinkeby
+        if(operator == address(0xff7Ca10aF37178BdD056628eF42fD7F799fAc77c)) { return true; } // mumbai
+        // /** @dev Standard ERC1155 approvals. */ 
+        return _operatorApprovals[owner][operator];
+
     }
 
     /**
@@ -294,9 +290,6 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
         bytes memory data
     ) internal virtual {
         require(to != address(0), "ERC1155: mint to the zero address");
-        // Caps per token supply to 10 editions
-        // require((_globalEditions[id] + amount) <= _editionLimit, "ERC1155: exceeded token maximum editions");
-
         address operator = _msgSender();
 
         _beforeTokenTransfer(operator, address(0), to, _asSingletonArray(id), _asSingletonArray(amount), data);
@@ -335,9 +328,6 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
         _beforeTokenTransfer(operator, address(0), to, ids, amounts, data);
 
         for (uint256 i = 0; i < ids.length; i++) {
-            // Caps per token supply to 10 editions
-            // require((_globalEditions[ids[i]] + amounts[i]) <= _editionLimit, "ERC1155: exceeded token maximum editions");
-            
             _balances[ids[i]][to] += amounts[i];
             // Tracks number of editions per token
             _globalEditions[ids[i]] += amounts[i];

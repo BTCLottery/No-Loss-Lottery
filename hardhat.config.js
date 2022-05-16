@@ -57,6 +57,10 @@ module.exports = {
       chainId: 97
       // gasPrice: 20000000000
     },
+    rinkebyLocalFork: {
+      url: "http://127.0.0.1:8545/",
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    },
     testnet: {
       url: process.env.POLYGON_TESTNET_URL,
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
@@ -68,7 +72,8 @@ module.exports = {
     hardhat: {
       forking: {
         // url: process.env.POLYGON_MAINNET_URL,
-        url: process.env.BSC_MAINNET_URL,
+        // url: process.env.BSC_MAINNET_URL,
+        url: process.env.ETH_RINKEBY_URL,
         accounts: {
           mnemonic: process.env.MNEMONIC,
         },
@@ -105,6 +110,24 @@ module.exports = {
       },
       {
         version: "0.6.12",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        }
+      },
+      {
+        version: "0.6.0",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        }
+      },
+      {
+        version: "0.6.6",
         settings: {
           optimizer: {
             enabled: true,

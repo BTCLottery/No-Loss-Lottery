@@ -3,14 +3,14 @@ const config = require('../config');
 module.exports = async ({getNamedAccounts, deployments}) => {
     const {deploy, log} = deployments;
     const {deployer} = await getNamedAccounts();
-    log("Deploying BTCLPToken....");
-    const token = await deploy('BTCLPToken', {
+    log("Deploying NLLToken....");
+    const token = await deploy('NLLToken', {
       from: deployer,
       args: [],
       log: true,
     });
-    log(`01 - Deployed 'BTCLPToken' at ${token.address}`);
+    log(`03 - Deployed 'NLLToken' at ${token.address}`);
     return true;
 };
-module.exports.tags = ['BTCLPToken'];
-module.exports.id = 'BTCLPToken';
+module.exports.tags = ['NLLToken'];
+module.exports.id = 'NLLToken';

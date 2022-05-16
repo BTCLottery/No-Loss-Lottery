@@ -9,7 +9,7 @@ module.exports = async ({getNamedAccounts, deployments}) => {
       args: [0], // add a future date in production
       log: true,
     });
-    log(`03 - Deployed 'BTCLPMetaGamePass' at ${nft.address}`);
+    log(`04 - Deployed 'BTCLPMetaGamePass' at ${nft.address}`);
     return true;
 };
 module.exports.tags = ['BTCLPMetaGamePass'];

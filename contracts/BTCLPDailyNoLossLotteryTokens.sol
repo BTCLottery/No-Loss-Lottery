@@ -12,12 +12,11 @@ import "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 
-contract BTCLPDailyNoLossLotteryV2 is Context, Ownable, ReentrancyGuard, VRFConsumerBaseV2, KeeperCompatible {
+contract BTCLPDailyNoLossLotteryTokens is Context, Ownable, ReentrancyGuard, VRFConsumerBaseV2, KeeperCompatible {
     using SafeERC20 for IERC20;
     
     IERC20 private btclpToken; // GET TOKENS BACK AFTER THE GAME ENDS
     IERC20 private nllToken;   // TOKENS ARE BURNED AFTER USE
-    // IERC20 private nllToken;   // NFTS AUTOMATICALLY SUBSCRIBE YOU TO THE NLL
 
     VRFCoordinatorV2Interface COORDINATOR;
     LinkTokenInterface LINKTOKEN;
@@ -26,7 +25,7 @@ contract BTCLPDailyNoLossLotteryV2 is Context, Ownable, ReentrancyGuard, VRFCons
     event LotteryClose(uint256 lotteryRoundNr, uint256 totalTickets, uint256 totalPlayers);
     event LotteryCompleted(uint256 lotteryRoundNr, uint256[10] winningTicketsNr, address[10] winners);
     event TicketsPurchased(address token, address player, uint256 tokens, bytes data);
-    event Claim(address claimer, uint256 btclpAmount, uint256 nllAmount);
+    event Claim(address claimer, uint256 btclpAmount);
 
     enum Status {
         Open,           // The lottery is open for ticket purchases
@@ -53,17 +52,17 @@ contract BTCLPDailyNoLossLotteryV2 is Context, Ownable, ReentrancyGuard, VRFCons
     mapping(uint => Round) public rounds;
 
     // CHAINLINK BSC - VRF V2
-    address public vrfCoordinator = 0x6A2AAd07396B36Fe02a22b33cf443582f682c82f; // 0x6168499c0cFfCaCD319c818142124B7A15E857ab; // Rinkeby
+    address public vrfCoordinator = 0x6168499c0cFfCaCD319c818142124B7A15E857ab; // 0x6A2AAd07396B36Fe02a22b33cf443582f682c82f; // 0x6168499c0cFfCaCD319c818142124B7A15E857ab; // Rinkeby
     address public link = 0x84b9B910527Ad5C03A9Ca831909E21e236EA7b06; // 0x01BE23585060835E02B77ef475b0Cc51aA1e0709; // Rinkeby
     bytes32 public keyHash = 0xd4bb89654db74673a187bd804519e65e3f71a52bc55f11da7601a13dcf505314; // 0xd89b2bf150e3b9e13446986e571fb9cab24b13cea0a43ea20a6049a85cc807cc; // Rinkeby
 
     // DAILY JACKPOT ROUND
     uint256 public round;
-    uint256 public igoEndBlock = block.number; // 15 May 2022
+    uint256 public startBlock = block.number;  // 1 June 2022
     uint256 public unclaimedTokens;            // total BTCLP Tokens that can be claimed
-    uint256 private blocksPerDay = 28700;      // for BSC // 6446 for Rinkeby // 43200 for MATIC
-    uint256 private btclpEntry = 1200 * 1e18;  // 1200 BTCLP per Ticket and can be claimed at the end
-    uint256 private nllEntry = 1e18;           // 1 NLL Token per Ticket but get's burned after use
+    uint256 private blocksPerDay = 6446;       // 28700 for BSC // 6446 for Rinkeby // 43200 for MATIC
+    uint256 private btclpEntry = 1 * 1e18;     // 1 BTCLP per Ticket that can be reclaimed at the end
+    uint256 private nllEntry = 1 * 1e18;       // 1 NLL Token per Ticket but get's burned after use
     uint16 private requestConfirmations = 3;   // Min Blocks after 
     uint32 private callbackGasLimit = 100000;  // Amount of gas used for Chainlink Keepers Network calling Chainlink VRF V2 Randomness Function
     uint32 private numWords = 1;               // Request 10 Random bytes32
@@ -76,8 +75,7 @@ contract BTCLPDailyNoLossLotteryV2 is Context, Ownable, ReentrancyGuard, VRFCons
         round = 1;
         rounds[round].lotteryStatus = Status.Open;
         rounds[round].startDate = block.timestamp;
-        // rounds[round].endDate = rounds[round].startDate.addDays(1); // PRODUCTION
-        rounds[round].endDate = addMinutes(rounds[round].startDate, 4); // 4 minutes
+        rounds[round].endDate = addMinutes(rounds[round].startDate, 4); // 4 minutes -> addDays(1) in Production
         COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
         LINKTOKEN = LinkTokenInterface(link);
         createNewSubscription();
@@ -86,45 +84,41 @@ contract BTCLPDailyNoLossLotteryV2 is Context, Ownable, ReentrancyGuard, VRFCons
     // Create a new subscription when the contract is initially deployed.
     function createNewSubscription() private onlyOwner {
         subscriptionId = COORDINATOR.createSubscription();
-        // Add this contract as a consumer of its own subscription.
         COORDINATOR.addConsumer(subscriptionId, address(this));
     }
 
-    // Assumes this contract owns link.
-    // 1000000000000000000 = 1 LINK
+    // Assumes this contract owns link. 1000000000000000000 = 1 LINK
     function topUpSubscription(uint256 amount) external onlyOwner {
         LINKTOKEN.transferAndCall(address(COORDINATOR), amount, abi.encode(subscriptionId));
     }
 
+    // Add a consumer contract to the subscription.
     function addConsumer(address consumerAddress) external onlyOwner {
-        // Add a consumer contract to the subscription.
         COORDINATOR.addConsumer(subscriptionId, consumerAddress);
     }
 
+    // Remove a consumer contract from the subscription.
     function removeConsumer(address consumerAddress) external onlyOwner {
-        // Remove a consumer contract from the subscription.
         COORDINATOR.removeConsumer(subscriptionId, consumerAddress);
     }
 
+    // Cancel the subscription and send the remaining LINK to a wallet address.
     function cancelSubscription(address receivingWallet) external onlyOwner {
-        // Cancel the subscription and send the remaining LINK to a wallet address.
         COORDINATOR.cancelSubscription(subscriptionId, receivingWallet);
         subscriptionId = 0;
     }
 
     // Transfer this contract's funds to an address.
-    // 1000000000000000000 = 1 LINK
     function withdraw(uint256 amount, address to) external onlyOwner {
         LINKTOKEN.transfer(to, amount);
     }
-    // CHAINLINK
 
     /**
      * @dev Get 1 Ticket Price with BTCLP Tokens.
-     * @custom:time every hour chance entry price increases by 50 BTCLP Tokens
+     * @custom:time every hour entry price increases by 1 BTCLP Tokens for each chance
      */
     function getBtclpPrice() public view returns (uint ticketPrice) {
-        return btclpEntry + (50 * (diffHours(rounds[round].startDate, block.timestamp) * 1e18));
+        return btclpEntry + (1 * (diffHours(rounds[round].startDate, block.timestamp) * 1e18));
     }
 
     function addMinutes(uint timestamp, uint _minutes) internal pure returns (uint newTimestamp) {
@@ -158,13 +152,12 @@ contract BTCLPDailyNoLossLotteryV2 is Context, Ownable, ReentrancyGuard, VRFCons
      * @param roundNr Desired round number.
      * returns claimed BTCL Tokens.
      */
-    function claim(uint roundNr) public nonReentrant returns (uint256 claimedBTCL, uint256 claimedNLL) {
+    function claim(uint roundNr) public nonReentrant returns (uint256 claimedBTCL) {
         require(roundNr > round, "Wait until round finishes");
         uint btclpTokens = 0;
-        uint nllTokens = 0;
         
         // CLAIM BTCL TOKENS AFTER IGO ENDS
-        if(block.number >= igoEndBlock) {
+        if(block.number >= startBlock) {
             if(rounds[roundNr].totalBTCLP[_msgSender()] > 0) {
                 btclpTokens = rounds[roundNr].totalBTCLP[_msgSender()];
                 rounds[roundNr].totalBTCLP[_msgSender()] = 0;
@@ -173,57 +166,35 @@ contract BTCLPDailyNoLossLotteryV2 is Context, Ownable, ReentrancyGuard, VRFCons
             }
         }
 
-        // CLAIM NLL TOKENS MAX 1 DAY AFTER IGO CLIFF BLOCK
-        if(block.number <= igoEndBlock + blocksPerDay) {
-            if(rounds[roundNr].totalNLL[_msgSender()] > 0) {
-                nllTokens = rounds[roundNr].totalNLL[_msgSender()];
-                rounds[roundNr].totalNLL[_msgSender()] = 0;
-                nllToken.safeTransfer(_msgSender(), nllTokens);
-            }
-        }
-
-        emit Claim(_msgSender(), btclpTokens, nllTokens);
-        return (btclpTokens, nllTokens);
+        emit Claim(_msgSender(), btclpTokens);
+        return btclpTokens;
     }
 
     /**
      * @dev Claim locked tokens + rewards from all rounds.
      * @return claimedBTCLP and claimnedNLL
      */
-    function claimAll() public nonReentrant returns (uint256 claimedBTCLP, uint256 claimnedNLL) {
+    function claimAll() public nonReentrant returns (uint256 claimedBTCLP) {
         uint btclpTokens = 0;
-        uint nllTokens = 0;
         for(uint i = 1; i <= round; i++) {
             // CLAIM BTCLP TOKENS AFTER IGO ENDS
-            if(block.number >= igoEndBlock) {
+            if(block.number >= startBlock) {
                 if (rounds[i].totalBTCLP[_msgSender()] > 0) {
                     uint btclp = rounds[i].totalBTCLP[_msgSender()];
                     rounds[i].totalBTCLP[_msgSender()] = 0;
                     btclpTokens += btclp;
                 }
             }
-
-            // CLAIM NLL TOKENS UNTIL 1 DAY AFTER IGO CLIFF ENDS
-            if(block.number <= igoEndBlock + blocksPerDay) {
-                if(rounds[i].totalNLL[_msgSender()] > 0) {
-                    uint nll = rounds[i].totalNLL[_msgSender()];
-                    rounds[i].totalNLL[_msgSender()] = 0;
-                    nllTokens += nll;
-                }
-            }
         }
 
-        if(block.number >= igoEndBlock) {
+        if(block.number >= startBlock) {
             btclpToken.safeTransfer(_msgSender(), btclpTokens);
             unclaimedTokens -= btclpTokens;
         }
         
-        if(block.number <= igoEndBlock + blocksPerDay) {
-            nllToken.safeTransfer(_msgSender(), nllTokens);
-        }
 
-        emit Claim(_msgSender(), btclpTokens, nllTokens);
-        return (btclpTokens, nllTokens);
+        emit Claim(_msgSender(), btclpTokens);
+        return btclpTokens;
     }
 
     /**
@@ -280,9 +251,7 @@ contract BTCLPDailyNoLossLotteryV2 is Context, Ownable, ReentrancyGuard, VRFCons
         }
         (bool success,) = address(btclpToken).call(abi.encodeWithSignature("burn(uint256)",toBurn));
         require(success,"burn FAIL");
-        // btclpToken.burn(address(this), toBurn);
-        // btclpToken.burn(toBurn);
-        // btclpToken.transfer(burnContract, toBurn);
+
         rounds[round].lotteryStatus = Status.Completed;
         rounds[round].randomResult = randomness;
         rounds[round].requestId = requestId;
@@ -295,8 +264,7 @@ contract BTCLPDailyNoLossLotteryV2 is Context, Ownable, ReentrancyGuard, VRFCons
             round = round + 1;
             rounds[round].lotteryStatus = Status.Open;
             rounds[round].startDate = block.timestamp;
-            // rounds[round].endDate = rounds[round].startDate.addDays(1);
-            rounds[round].endDate = addMinutes(rounds[round].startDate, 4);
+            rounds[round].endDate = addMinutes(rounds[round].startDate, 4); // addDays(1) in production
             emit LotteryOpen(round);
         }
 
@@ -329,7 +297,6 @@ contract BTCLPDailyNoLossLotteryV2 is Context, Ownable, ReentrancyGuard, VRFCons
             rounds[round].requestId == 0 &&
             rounds[round].lotteryStatus == Status.Open && 
             rounds[round].lotteryStatus != Status.Completed && 
-            // rounds[round].totalUniquePlayers >= 2 && 
             rounds[round].totalTickets >= 10;
         performData = abi.encode(round);
     }
@@ -345,7 +312,6 @@ contract BTCLPDailyNoLossLotteryV2 is Context, Ownable, ReentrancyGuard, VRFCons
             block.timestamp >= subMinutes(rounds[round].endDate, 2) && 
             rounds[round].lotteryStatus == Status.Open && 
             rounds[round].lotteryStatus != Status.Completed && 
-            // rounds[round].totalUniquePlayers >= 2 && 
             rounds[round].totalTickets >= 10, 
             "Could not draw winnings tickets."
         );
@@ -375,7 +341,6 @@ contract BTCLPDailyNoLossLotteryV2 is Context, Ownable, ReentrancyGuard, VRFCons
      * @dev Helper function used to withdraw remaining LINK Tokens after all Daily Games have finished.
      */
     function withdrawLink() external onlyOwner {
-        // require(round >= 365, "Can only be called after all rounds have finished");
         require(LINKTOKEN.transfer(_msgSender(), LINKTOKEN.balanceOf(address(this))), "Unable to transfer");
     }
 
@@ -383,7 +348,6 @@ contract BTCLPDailyNoLossLotteryV2 is Context, Ownable, ReentrancyGuard, VRFCons
      * @dev Helper function used to withdraw remaining LINK Tokens after all Daily Games have finished.
      */
     function withdrawBTCLP() external onlyOwner {
-        // require(round >= 365, "Can only be called after all rounds have finished");
         require(btclpToken.transfer(_msgSender(), btclpToken.balanceOf(address(this))), "Unable to transfer");
     }
 
@@ -391,7 +355,7 @@ contract BTCLPDailyNoLossLotteryV2 is Context, Ownable, ReentrancyGuard, VRFCons
     function getCurrentBlockTime() public view returns (uint blockNr) { blockNr = block.number; }
     function getCurrentRoundTimeDiff() public view returns (uint time) { time = rounds[round].endDate - block.timestamp; }
     function getCurrentRoundEndRound() public view returns (bool time) { time = addMinutes(block.timestamp, 2) >= rounds[round].endDate; }
-    function getCurrentRoundNLLIgoRound() public view returns (bool time) { time = block.number >= igoEndBlock + blocksPerDay; }
+    function getCurrentRoundNLLIgoRound() public view returns (bool time) { time = block.number >= startBlock + blocksPerDay; }
 
     /**
      * @dev ERC677 TokenFallback Function.
@@ -400,20 +364,18 @@ contract BTCLPDailyNoLossLotteryV2 is Context, Ownable, ReentrancyGuard, VRFCons
      * @param _data  The transaction metadata.
      */
     function onTokenTransfer(address _wallet, uint256 _value, bytes memory _data) public {
-        // address parsed;
-        // assembly {parsed := mload(add(_data, 32))}
         require(finalRound == false, "The daily BTCLP No Loss Lottery has successfully distributed all 401.500.000 BTCLP Tokens!");
         uint ticketPrice = getBtclpPrice();
         buyTicket(_wallet, _value, ticketPrice, round, _data);
     }
 
-    // "0xA83299a769066869D5B539E1DD54D9EB6cb8aA30", "0xbdab7deBD24073aA9B4a9188E1010Ec36627Dba6"
     function buyTicket(address _wallet, uint256 _value, uint256 _btclpEntryPrice, uint256 _round, bytes memory _data) private {    
         // HIDRATE UNIQUE PLAYERS IN CURRENT ROUND
         if(rounds[_round].isUnique[_wallet] == false) {
             rounds[_round].isUnique[_wallet] = true;
             rounds[_round].totalUniquePlayers = rounds[_round].totalUniquePlayers + 1;
         }
+        
         // BUY TICKET WITH BTCLP
         if(_msgSender() == address(btclpToken)) {
             require(_value % _btclpEntryPrice == 0, "The Daily No Loss Lottery accepts multiple 1200 BTCLP + Hourly increases of 50 BTCLP for each chance.");
@@ -422,16 +384,15 @@ contract BTCLPDailyNoLossLotteryV2 is Context, Ownable, ReentrancyGuard, VRFCons
             rounds[_round].totalBTCLP[_wallet] = rounds[_round].totalBTCLP[_wallet] + _value;
             unclaimedTokens += _value;
             emit TicketsPurchased(address(btclpToken), _wallet, _value, _data);
+        
         // BUY TICKET WITH NLL
         } else if (_msgSender() == address(nllToken)) {
             require(_value % nllEntry == 0, "1 NLL Token = 1 Chance at any time.");
             require(_value / nllEntry <= 250, "Max 250 Tickets can be reserved at once using NLL Tokens.");
             _addTickets(_wallet, _value / nllEntry);
             rounds[_round].totalNLL[_wallet] = rounds[_round].totalNLL[_wallet] + _value;
-            // if(block.number >= igoEndBlock + blocksPerDay) {
-                (bool success,) = address(nllToken).call(abi.encodeWithSignature("burn(uint256)",_value));
-                require(success, "burn FAIL");
-            // }
+            (bool success,) = address(nllToken).call(abi.encodeWithSignature("burn(uint256)",_value));
+            require(success, "burn FAIL");
             emit TicketsPurchased(address(nllToken), _wallet, _value, _data);
         } else {
             revert("Provided amounts are not valid.");

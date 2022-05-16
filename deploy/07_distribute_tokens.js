@@ -5,7 +5,7 @@ const oneToken = ethers.BigNumber.from(10).pow(18);
 module.exports = async ({getNamedAccounts, deployments}) => {
   const {deployer} = await getNamedAccounts();
   const btclpToken = await ethers.getContract('BTCLPToken');
-  const timelockController = await ethers.getContract('TimeLock');
+  const timeLock = await ethers.getContract('TimeLock');
   const tokenLock = await ethers.getContract('TokenLock');
 
   // [x] LOCKED_DAO_TOKENS: "5000000000", // 5 Billion BTCLP (50%)
@@ -15,42 +15,34 @@ module.exports = async ({getNamedAccounts, deployments}) => {
   // [x] TOTAL_YIELD_FARMING_TOKENS: "750000000", // 750 Million BTCLP (7.5%)
 
   // Transfer BTCLP DAO locked tokens to the tokenlock
-  if((await tokenLock.lockedAmounts(timelockController.address)).eq(0)) {
+  if((await tokenLock.lockedAmounts(timeLock.address)).eq(0)) {
     const lockedDAOTokens = oneToken.mul(config.LOCKED_DAO_TOKENS);
     await (await btclpToken.approve(tokenLock.address, lockedDAOTokens)).wait();
-    await (await tokenLock.lock(timelockController.address, lockedDAOTokens)).wait();
+    await (await tokenLock.lock(timeLock.address, lockedDAOTokens)).wait();
   }
 
   // Transfer tokens to Gnosis Safe for 10 Years of No Loss Lottery Prizes and Token Burns
   const totalNLLTokens = oneToken.mul(config.TOTAL_NO_LOSS_LOTTERY_TOKENS);
   const btclpBalance = await btclpToken.balanceOf(deployer);
-  if(btclpBalance.gt(totalNLLTokens)) {
-    await (await btclpToken.transfer(timelockController.address, balance.sub(totalNLLTokens))).wait();
-  }
+  await (await btclpToken.transfer(timeLock.address, btclpBalance.sub(totalNLLTokens))).wait();
 
-  // Transfer BTCLP DAO tokens to the timelock controller
+  // Transfer BTCLP DAO tokens to the timeLock controller
   const totalContributorTokens = oneToken.mul(config.TOTAL_CONTRIBUTOR_TOKENS);
   const balance = await btclpToken.balanceOf(deployer);
-  if(balance.gt(totalContributorTokens)) {
-    await (await btclpToken.transfer(timelockController.address, balance.sub(totalContributorTokens))).wait();
-  }
+  await (await btclpToken.transfer(timeLock.address, balance.sub(totalContributorTokens))).wait();
 
-  // Transfer BTCLP DAO tokens to the timelock controller
+  // Transfer BTCLP DAO tokens to the timeLock controller
   const totalStakingTokens = oneToken.mul(config.TOTAL_STAKING_TOKENS);
   const balanceStaking = await btclpToken.balanceOf(deployer);
-  if(balanceStaking.gt(totalStakingTokens)) {
-    await (await btclpToken.transfer(timelockController.address, balanceStaking.sub(totalStakingTokens))).wait();
-  }
+  await (await btclpToken.transfer(timeLock.address, balanceStaking.sub(totalStakingTokens))).wait();
 
-  // Transfer BTCLP DAO tokens to the timelock controller
+  // Transfer BTCLP DAO tokens to the timeLock controller
   const totalYieldFarmingTokens = oneToken.mul(config.TOTAL_YIELD_FARMING_TOKENS);
-  const balanceYF = await btclpToken.balanceYFOf(deployer);
-  if(balanceYF.gt(totalYieldFarmingTokens)) {
-    await (await btclpToken.transfer(timelockController.address, balanceYF.sub(totalYieldFarmingTokens))).wait();
-  }
+  const balanceYF = await btclpToken.balanceOf(deployer);
+  await (await btclpToken.transfer(timeLock.address, balanceYF.sub(totalYieldFarmingTokens))).wait();
 
   // Print out balances
-  const daoBalance = await btclpToken.balanceOf(timelockController.address);
+  const daoBalance = await btclpToken.balanceOf(timeLock.address);
   console.log(`Token balances:`);
   console.log(`  DAO: ${daoBalance.div(oneToken).toString()}`);
   const contributorBalance = await btclpToken.balanceOf(deployer);
@@ -59,7 +51,7 @@ module.exports = async ({getNamedAccounts, deployments}) => {
   console.log(`  Airdrop: ${airdropBalance.div(oneToken).toString()}`);
   const tokenlockBalance = await btclpToken.balanceOf(tokenLock.address);
   console.log(`  TokenLock: ${tokenlockBalance.div(oneToken).toString()}`);
-  const lockedDaoBalance = await tokenLock.lockedAmounts(timelockController.address);
+  const lockedDaoBalance = await tokenLock.lockedAmounts(timeLock.address);
   console.log(`    DAO: ${lockedDaoBalance.div(oneToken).toString()}`);
   console.log(`    TOTAL: ${lockedDaoBalance.div(oneToken).toString()}`);
   const total = daoBalance.add(contributorBalance).add(airdropBalance).add(tokenlockBalance);

@@ -1,14 +1,15 @@
 module.exports = {
-    VOTING_DELAY: "1", // 1 block
-    VOTING_PERIOD: "45818", // 1 week in blocks
-    VOTING_PERCENTAGE: "4", // 4 percent
     LOCKED_DAO_TOKENS: "5000000000", // 5 Billion BTCLP (50%)
     TOTAL_NO_LOSS_LOTTERY_TOKENS: "2500000000", // 2.5 Billion BTCLP (25%)
     TOTAL_CONTRIBUTOR_TOKENS: "1000000000", // 1 Billion BTCLP (10%)
     TOTAL_STAKING_TOKENS: "750000000", // 750 Million BTCLP (7.5%)
     TOTAL_YIELD_FARMING_TOKENS: "750000000", // 750 Million BTCLP (7.5%)
     // TOTAL_SEED_ROUND_TOKENS: "250000000", // 25 Million BTCLP (0.25%)
-    MIN_TIMELOCK_DELAY: "3600", // 172800 in production
+    VOTING_DELAY: "1", // 1 block
+    VOTING_PERIOD: "45818", // 1 week in blocks
+    VOTING_MIN_POWER: "0", // 4 percent
+    VOTING_PERCENTAGE: "4", // 4 percent
+    MIN_TIMELOCK_DELAY: "3600", // Queing for 172800 seconds in production
     EXECUTORS: [],
     PROPOSERS: [],
     UNLOCK_BEGIN: "2022-06-10",
