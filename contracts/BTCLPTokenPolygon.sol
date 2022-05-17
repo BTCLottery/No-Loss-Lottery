@@ -1440,7 +1440,7 @@ pragma solidity 0.6.6;
 
 
 
-contract ChildERC20 is
+contract BTCLPTokenPolygon is
     ERC20,
     IChildToken,
     AccessControlMixin,

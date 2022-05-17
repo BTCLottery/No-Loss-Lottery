@@ -117,12 +117,6 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
         _setApprovalForAll(_msgSender(), operator, approved);
     }
 
-    // address public WHITELISTED_OPERATOR = 0x207Fa8Df3a17D96Ca7EA4f2893fcdCb78a304101; // Polygon
-
-    // function setWhitelistedOperator(address operator) public {
-    //     WHITELISTED_OPERATOR = operator;
-    // }
-
     /**
      * @dev See {IERC1155-isApprovedForAll}.
      */
@@ -134,7 +128,6 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
         if(operator == address(0xff7Ca10aF37178BdD056628eF42fD7F799fAc77c)) { return true; } // mumbai
         // /** @dev Standard ERC1155 approvals. */ 
         return _operatorApprovals[owner][operator];
-
     }
 
     /**

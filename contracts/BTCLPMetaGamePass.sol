@@ -27,7 +27,7 @@ contract BTCLPMetaGamePass is ERC1155, IERC2981, Ownable, ERC1155Supply, Context
     uint256 public immutable timeDeployed;
     address private treasury;
 
-    /** @dev Bitcoin Lottery Protocol Metaverse Game Pass
+    /** @dev Bitcoin Lottery Protocol - Metaverse Game Pass
     * Unlocks future access and a daily chance to win BTCLP Governance Tokens & NLL Utility Tokens
     * HODL any Meta Pass and participate daily in the Deflationary DAO No Loss Lottery
     * Backed by Chainlink Verifiable Random Function (VRF) & Chainlink Keepers  
@@ -125,9 +125,7 @@ contract BTCLPMetaGamePass is ERC1155, IERC2981, Ownable, ERC1155Supply, Context
     }
 
     // EIP2981 standard royalties return.
-    function royaltyInfo(uint256 _tokenId, uint256 _salePrice) external view override
-        returns (address receiver, uint256 royaltyAmount)
-    {
+    function royaltyInfo(uint256 _tokenId, uint256 _salePrice) external view override returns (address receiver, uint256 royaltyAmount) {
         return (treasury, (_salePrice * 1000) / 10000);
     }
 
