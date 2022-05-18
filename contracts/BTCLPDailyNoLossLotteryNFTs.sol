@@ -29,10 +29,10 @@ contract BTCLPDailyNoLossLotteryNFTs is Context, Ownable, ReentrancyGuard, VRFCo
 
     struct Round {
         bool lotteryStatus;                         // Status for NFT Daily No Loss Lottery
-        uint256 requestId;                          // Chainlink VRF Round Request ID
-        uint256[] randomResult;                     // Chainlink VRF Random Result (hex number)
         uint256 startDate;                          // Current Round Start Time
         uint256 endDate;                            // Current Round End Date
+        uint256 requestId;                          // Chainlink VRF Round Request ID
+        uint256[] randomResult;                     // Chainlink VRF Random Result (hex number)
         uint256[10] luckyTickets;                   // 10 Lucky Tickets are drawn every round (you can win multiple times with 1 ticket)
         address[10] winners;                        // 10 Lucky Addresses of 10 Lucky Winnings Tickets
         mapping (uint256 => address) ticketNr;      // Get Players Addresses from their Ticket Numbers 

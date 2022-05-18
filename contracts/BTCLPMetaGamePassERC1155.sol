@@ -9,7 +9,7 @@ import "./@openzeppelin/contracts/security/Pausable.sol";
 import "./@openzeppelin/contracts/utils/Strings.sol";
 import "./@openzeppelin/contracts/utils/ContextMixin.sol";
 
-contract BTCLPMetaGamePass is ERC1155, IERC2981, Ownable, ERC1155Supply, ContextMixin { 
+contract BTCLPMetaGamePassERC1155 is ERC1155, IERC2981, Ownable, ERC1155Supply, ContextMixin { 
     using Strings for uint256;
 
     string public constant name = "Bitcoin Lottery Protocol Meta Game Pass";
