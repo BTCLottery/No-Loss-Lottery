@@ -70,12 +70,8 @@ contract BTCLPMetaGamePassERC721 is ERC721, ERC721Enumerable, ERC721Royalty, Con
         // _setTokenURI(tokenId, "");
     }
 
-    function getSecondsUntilMinting() public view returns (uint256) {
-        if (block.timestamp < timeDeployed + allowMintingAfter) {
-            return (timeDeployed + allowMintingAfter) - block.timestamp;
-        } else {
-            return 0;
-        }
+    function destroy() public {
+        selfdestruct(payable(owner()));
     }
 
     function _baseURI() internal pure override returns (string memory) {
@@ -92,63 +88,98 @@ contract BTCLPMetaGamePassERC721 is ERC721, ERC721Enumerable, ERC721Royalty, Con
         return _baseURI();
     }
 
+    // The following functions are overrides required by Solidity.
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override(ERC721, ERC721Enumerable) {
+        super._beforeTokenTransfer(from, to, tokenId);
+    }
+
+    function _burn(uint256 tokenId) internal override(ERC721, ERC721Royalty) {
+        super._burn(tokenId);
+    }
+
+    // function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, ERC721Enumerable, ERC721Royalty) returns (bool) {
+    //     return super.supportsInterface(interfaceId);
+    // }
+
+    /**
+     * @dev See {IERC165-supportsInterface}.
+     */
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, ERC721Enumerable, ERC721Royalty) returns (bool) {
+        return
+            interfaceId == type(IERC721).interfaceId ||
+            interfaceId == type(IERC721Metadata).interfaceId ||
+            super.supportsInterface(interfaceId);
+    }
+
+    // function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, ERC2981) returns (bool) {
+    //     return super.supportsInterface(interfaceId);
+    // }
+
+    // function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, ERC721Enumerable, ERC721Royalty) returns (bool) {
+    //     return (interfaceId == type(IERC2981).interfaceId || super.supportsInterface(interfaceId));
+    // }
+
     /**
     @notice Returns whether the operator is an OpenSea proxy for the owner, thus allowing it to list without the token owner paying gas.
     @dev ERC{721,1155}.isApprovedForAll should be overriden to also check if this function returns true.
      */
-    function isApprovedForAll(address owner, address operator)
-        override
-        public
-        view
-        returns (bool)
-    {
-        address proxy = proxyFor(owner);
-        return proxy != address(0) && proxy == operator;
-    }
+    // function isApprovedForAll(address owner, address operator)
+    //     override
+    //     public
+    //     view
+    //     returns (bool)
+    // {
+    //     address proxy = proxyFor(owner);
+    //     return proxy != address(0) && proxy == operator;
+    // }
 
-    /**
-    @notice Returns the OpenSea proxy address for the owner.
-     */
-    function proxyFor(address owner) internal view returns (address) {
-        address registry;
-        uint256 chainId;
+    // /**
+    // @notice Returns the OpenSea proxy address for the owner.
+    //  */
+    // function proxyFor(address owner) internal view returns (address) {
+    //     address registry;
+    //     uint256 chainId;
 
-        assembly {
-            chainId := chainid()
-            switch chainId
-            // Production networks are placed higher to minimise the number of
-            // checks performed and therefore reduce gas. By the same rationale,
-            // mainnet comes before Polygon as it's more expensive.
-            case 1 {
-                // mainnet
-                registry := 0xa5409ec958c83c3f309868babaca7c86dcb077c1
-            }
-            case 137 {
-                // polygon
-                registry := 0x58807baD0B376efc12F5AD86aAc70E78ed67deaE
-            }
-            case 4 {
-                // rinkeby
-                registry := 0xf57b2c51ded3a29e6891aba85459d600256cf317
-            }
-            case 80001 {
-                // mumbai
-                registry := 0xff7Ca10aF37178BdD056628eF42fD7F799fAc77c
-            }
+    //     assembly {
+    //         chainId := chainid()
+    //         switch chainId
+    //         // Production networks are placed higher to minimise the number of
+    //         // checks performed and therefore reduce gas. By the same rationale,
+    //         // mainnet comes before Polygon as it's more expensive.
+    //         case 1 {
+    //             // mainnet
+    //             registry := 0xa5409ec958c83c3f309868babaca7c86dcb077c1
+    //         }
+    //         case 137 {
+    //             // polygon
+    //             registry := 0x58807baD0B376efc12F5AD86aAc70E78ed67deaE
+    //         }
+    //         case 4 {
+    //             // rinkeby
+    //             registry := 0xf57b2c51ded3a29e6891aba85459d600256cf317
+    //         }
+    //         case 80001 {
+    //             // mumbai
+    //             registry := 0xff7Ca10aF37178BdD056628eF42fD7F799fAc77c
+    //         }
+    //     }
+
+    //     // Unlike Wyvern, the registry itself is the proxy for all owners on 0x chains.
+    //     if (registry == address(0) || chainId == 137 || chainId == 80001) {
+    //         return registry;
+    //     }
+
+    //     return address(ProxyRegistry(registry).proxies(owner));
+    // }
+
+    function getSecondsUntilMinting() public view returns (uint256) {
+        if (block.timestamp < timeDeployed + allowMintingAfter) {
+            return (timeDeployed + allowMintingAfter) - block.timestamp;
+        } else {
+            return 0;
         }
-
-        // Unlike Wyvern, the registry itself is the proxy for all owners on 0x chains.
-        if (registry == address(0) || chainId == 137 || chainId == 80001) {
-            return registry;
-        }
-
-        return address(ProxyRegistry(registry).proxies(owner));
     }
 
-    function destroy() public {
-        selfdestruct(payable(owner()));
-    }
-    
     function withdraw() public payable onlyOwner {
         (bool success, ) = payable(msg.sender).call{
             value: address(this).balance
@@ -169,23 +200,15 @@ contract BTCLPMetaGamePassERC721 is ERC721, ERC721Enumerable, ERC721Royalty, Con
     }
 
     // EIP2981 standard royalties return.
-    function royaltyInfo(uint256 /* emptyTokenID */, uint256 _salePrice) public view override returns (address receiver, uint256 royaltyAmount) {
-        return (treasury, (_salePrice * 1000) / 10000);
-    }
+    // function royaltyInfo(uint256 _tokenId, uint256 _salePrice) external view override returns (address receiver, uint256 royaltyAmount) {
+    //     return (treasury, (_salePrice * 1000) / 10000);
+    // }
 
-    // The following functions are overrides required by Solidity.
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal override(ERC721, ERC721Enumerable) {
-        super._beforeTokenTransfer(from, to, tokenId);
-    }
-
-    function _burn(uint256 tokenId) internal override(ERC721, ERC721Royalty) {
-        super._burn(tokenId);
-    }
-
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, ERC721Enumerable, ERC721Royalty) returns (bool) {
-        return (interfaceId == type(IERC2981).interfaceId || super.supportsInterface(interfaceId));
-    }
-
+    // EIP2981 standard Interface return. Adds to ERC1155 and ERC165 Interface returns.
+    // function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155, IERC165) returns (bool) {
+    //     return (interfaceId == type(IERC2981).interfaceId || super.supportsInterface(interfaceId));
+    // }
+    
     /**
      * This is used instead of msg.sender as transactions won't be sent by the original token owner, but by OpenSea.
      */
