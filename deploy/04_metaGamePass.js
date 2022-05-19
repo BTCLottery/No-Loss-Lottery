@@ -6,7 +6,11 @@ module.exports = async ({getNamedAccounts, deployments}) => {
     log("Deploying BTCLPMetaGamePass....");
     const nft = await deploy('BTCLPMetaGamePass', {
       from: deployer,
-      args: [0], // add a future date in production
+      args: [
+        "1",                                          // timestamp
+        "0xe6F7C7caF678A3B7aFb93891907873E88F4FD4AC", // gnosis safe
+        "750"                                         // royalties basepoints
+      ], 
       log: true,
     });
     log(`04 - Deployed 'BTCLPMetaGamePass' at ${nft.address}`);

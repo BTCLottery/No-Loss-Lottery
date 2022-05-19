@@ -41,18 +41,29 @@ contract ProxyRegistry {
 
 contract BTCLPMetaGamePassERC721 is ERC721, ERC721Enumerable, ERC721Royalty, ContextMixin, Ownable {
     using Counters for Counters.Counter;
+    Counters.Counter private _tokenIdCounter;
 
     uint256 public constant MAX_GAME_PASSES = 5000;
     uint256 public immutable allowMintingAfter;
     uint256 public immutable timeDeployed;
-    address private treasury;
 
-    Counters.Counter private _tokenIdCounter;
-
-    constructor(uint256 _allowMintingOn) ERC721("No Loss Lottery Game Pass", "NLLGP") {
+    // 1, 0xe6F7C7caF678A3B7aFb93891907873E88F4FD4AC, 750
+    constructor(
+        uint256 _allowMintingOn,
+        address _royaltiesReceiver, 
+        uint96 _royaltiesFeeNumerator
+    ) ERC721("No Loss Lottery Game Pass", "NLLGP") {
         allowMintingAfter = _allowMintingOn > block.timestamp ? _allowMintingOn - block.timestamp : 0;
         timeDeployed = block.timestamp;
-        treasury = msg.sender;
+        _setDefaultRoyalty(_royaltiesReceiver, _royaltiesFeeNumerator);
+    }
+
+    function _baseURI() internal pure override returns (string memory) {
+        return "ipfs://bafybeicwk5gf5sw7ti5gr7t776aijcfy2ufnffsafnxyc7bqpumkgiskxy";
+    }
+
+    function contractURI() public pure returns (string memory) {
+        return "ipfs://QmTnq4ZSUqAuqerZtrhatrBAHYkUzjgFhxwZyBpA5aBz93"; // Contract-level metadata for OpenSea
     }
 
     function safeMint(uint256 amount) public payable {
@@ -67,25 +78,98 @@ contract BTCLPMetaGamePassERC721 is ERC721, ERC721Enumerable, ERC721Royalty, Con
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(msg.sender, tokenId);
-        // _setTokenURI(tokenId, "");
     }
 
-    function destroy() public {
-        selfdestruct(payable(owner()));
-    }
-
-    function _baseURI() internal pure override returns (string memory) {
-        return "ipfs://bafybeicwk5gf5sw7ti5gr7t776aijcfy2ufnffsafnxyc7bqpumkgiskxy";
-    }
-
-    /** @dev Contract-level metadata for OpenSea. */
-    function contractURI() public pure returns (string memory) {
-        return "ipfs://QmTnq4ZSUqAuqerZtrhatrBAHYkUzjgFhxwZyBpA5aBz93"; // Contract-level metadata
+    function getSecondsUntilMinting() public view returns (uint256) {
+        if (block.timestamp < timeDeployed + allowMintingAfter) {
+            return (timeDeployed + allowMintingAfter) - block.timestamp;
+        } else {
+            return 0;
+        }
     }
 
     function tokenURI(uint256 tokenId) public pure override(ERC721) returns (string memory) {
         require(tokenId <= MAX_GAME_PASSES);
         return _baseURI();
+    }
+
+     // Maintain flexibility to modify royalties recipient (could also add basis points).
+    function setRoyalty(address recipient, uint96 feeNumerator) external onlyOwner {
+        _setDefaultRoyalty(recipient, feeNumerator);
+    }
+
+    function setRoyaltyById(uint256 tokenId, address recipient, uint96 fraction) external onlyOwner {
+        _setTokenRoyalty(tokenId, recipient, fraction);
+    }
+
+    function isApprovedForAll(address owner, address operator)
+        override(ERC721)
+        public
+        view
+        returns (bool)
+    {
+        address proxy = proxyFor(owner);
+        return proxy != address(0) && proxy == operator;
+    }
+
+    /**
+    @notice Returns the OpenSea proxy address for the owner.
+     */
+    function proxyFor(address owner) internal view returns (address) {
+        address registry;
+        uint256 chainId;
+
+        assembly {
+            chainId := chainid()
+            switch chainId
+            // Production networks are placed higher to minimise the number of
+            // checks performed and therefore reduce gas. By the same rationale,
+            // mainnet comes before Polygon as it's more expensive.
+            case 1 {
+                // mainnet
+                registry := 0xa5409ec958c83c3f309868babaca7c86dcb077c1
+            }
+            case 137 {
+                // polygon
+                registry := 0x58807baD0B376efc12F5AD86aAc70E78ed67deaE
+            }
+            case 4 {
+                // rinkeby
+                registry := 0xf57b2c51ded3a29e6891aba85459d600256cf317
+            }
+            case 80001 {
+                // mumbai
+                registry := 0xff7Ca10aF37178BdD056628eF42fD7F799fAc77c
+            }
+        }
+
+        // Unlike Wyvern, the registry itself is the proxy for all owners on 0x
+        // chains.
+        if (registry == address(0) || chainId == 137 || chainId == 80001) {
+            return registry;
+        }
+
+        return address(ProxyRegistry(registry).proxies(owner));
+    }
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(ERC721, ERC721Enumerable, ERC721Royalty)
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceId);
+    }
+
+    function withdraw() public payable onlyOwner {
+        (bool success, ) = payable(msg.sender).call{
+            value: address(this).balance
+        }("");
+        require(success);
+    }
+
+    function destroy() public onlyOwner {
+        selfdestruct(payable(owner()));
     }
 
     // The following functions are overrides required by Solidity.
@@ -97,118 +181,6 @@ contract BTCLPMetaGamePassERC721 is ERC721, ERC721Enumerable, ERC721Royalty, Con
         super._burn(tokenId);
     }
 
-    // function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, ERC721Enumerable, ERC721Royalty) returns (bool) {
-    //     return super.supportsInterface(interfaceId);
-    // }
-
-    /**
-     * @dev See {IERC165-supportsInterface}.
-     */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, ERC721Enumerable, ERC721Royalty) returns (bool) {
-        return
-            interfaceId == type(IERC721).interfaceId ||
-            interfaceId == type(IERC721Metadata).interfaceId ||
-            super.supportsInterface(interfaceId);
-    }
-
-    // function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, ERC2981) returns (bool) {
-    //     return super.supportsInterface(interfaceId);
-    // }
-
-    // function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, ERC721Enumerable, ERC721Royalty) returns (bool) {
-    //     return (interfaceId == type(IERC2981).interfaceId || super.supportsInterface(interfaceId));
-    // }
-
-    /**
-    @notice Returns whether the operator is an OpenSea proxy for the owner, thus allowing it to list without the token owner paying gas.
-    @dev ERC{721,1155}.isApprovedForAll should be overriden to also check if this function returns true.
-     */
-    // function isApprovedForAll(address owner, address operator)
-    //     override
-    //     public
-    //     view
-    //     returns (bool)
-    // {
-    //     address proxy = proxyFor(owner);
-    //     return proxy != address(0) && proxy == operator;
-    // }
-
-    // /**
-    // @notice Returns the OpenSea proxy address for the owner.
-    //  */
-    // function proxyFor(address owner) internal view returns (address) {
-    //     address registry;
-    //     uint256 chainId;
-
-    //     assembly {
-    //         chainId := chainid()
-    //         switch chainId
-    //         // Production networks are placed higher to minimise the number of
-    //         // checks performed and therefore reduce gas. By the same rationale,
-    //         // mainnet comes before Polygon as it's more expensive.
-    //         case 1 {
-    //             // mainnet
-    //             registry := 0xa5409ec958c83c3f309868babaca7c86dcb077c1
-    //         }
-    //         case 137 {
-    //             // polygon
-    //             registry := 0x58807baD0B376efc12F5AD86aAc70E78ed67deaE
-    //         }
-    //         case 4 {
-    //             // rinkeby
-    //             registry := 0xf57b2c51ded3a29e6891aba85459d600256cf317
-    //         }
-    //         case 80001 {
-    //             // mumbai
-    //             registry := 0xff7Ca10aF37178BdD056628eF42fD7F799fAc77c
-    //         }
-    //     }
-
-    //     // Unlike Wyvern, the registry itself is the proxy for all owners on 0x chains.
-    //     if (registry == address(0) || chainId == 137 || chainId == 80001) {
-    //         return registry;
-    //     }
-
-    //     return address(ProxyRegistry(registry).proxies(owner));
-    // }
-
-    function getSecondsUntilMinting() public view returns (uint256) {
-        if (block.timestamp < timeDeployed + allowMintingAfter) {
-            return (timeDeployed + allowMintingAfter) - block.timestamp;
-        } else {
-            return 0;
-        }
-    }
-
-    function withdraw() public payable onlyOwner {
-        (bool success, ) = payable(msg.sender).call{
-            value: address(this).balance
-        }("");
-        require(success);
-    }
-
-    /** @dev EIP2981 royalties implementation. */
-
-    // Maintain flexibility to modify royalties recipient (could also add basis points).
-    function _setRoyalties(address newRecipient) internal {
-        require(newRecipient != address(0), "Royalties: new recipient is the zero address");
-        treasury = newRecipient;
-    }
-
-    function setRoyalties(address newRecipient) external onlyOwner {
-        _setRoyalties(newRecipient);
-    }
-
-    // EIP2981 standard royalties return.
-    // function royaltyInfo(uint256 _tokenId, uint256 _salePrice) external view override returns (address receiver, uint256 royaltyAmount) {
-    //     return (treasury, (_salePrice * 1000) / 10000);
-    // }
-
-    // EIP2981 standard Interface return. Adds to ERC1155 and ERC165 Interface returns.
-    // function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155, IERC165) returns (bool) {
-    //     return (interfaceId == type(IERC2981).interfaceId || super.supportsInterface(interfaceId));
-    // }
-    
     /**
      * This is used instead of msg.sender as transactions won't be sent by the original token owner, but by OpenSea.
      */
@@ -220,4 +192,5 @@ contract BTCLPMetaGamePassERC721 is ERC721, ERC721Enumerable, ERC721Royalty, Con
     {
         return ContextMixin.msgSender();
     }
+
 }
