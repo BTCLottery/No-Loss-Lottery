@@ -1,18 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-// ███    ██  ██████      ██       ██████  ███████ ███████     ██       ██████  ████████ ████████ ███████ ██████  ██    ██
-// ████   ██ ██    ██     ██      ██    ██ ██      ██          ██      ██    ██    ██       ██    ██      ██   ██  ██  ██ 
-// ██ ██  ██ ██    ██     ██      ██    ██ ███████ ███████     ██      ██    ██    ██       ██    █████   ██████    ████  
-// ██  ██ ██ ██    ██     ██      ██    ██      ██      ██     ██      ██    ██    ██       ██    ██      ██   ██    ██   
-// ██   ████  ██████      ███████  ██████  ███████ ███████     ███████  ██████     ██       ██    ███████ ██   ██    ██   
+// ███    ██ ██      ██          ████████  ██████  ██   ██ ███████ ███    ██ 
+// ████   ██ ██      ██             ██    ██    ██ ██  ██  ██      ████   ██ 
+// ██ ██  ██ ██      ██             ██    ██    ██ █████   █████   ██ ██  ██ 
+// ██  ██ ██ ██      ██             ██    ██    ██ ██  ██  ██      ██  ██ ██ 
+// ██   ████ ███████ ███████        ██     ██████  ██   ██ ███████ ██   ████ 
 
-import "./utils/access/Ownable.sol";
-import "./utils/token/ERC20/MinimalERC20.sol";
-import "./utils/token/ERC677/ERC677Receiver.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract NLLToken is Ownable, MinimalERC20 {
-    constructor() MinimalERC20("NLL Token", "NLL") {}
+interface ERC677Receiver {
+  function onTokenTransfer(address _sender, uint _value, bytes memory _data) external;
+}
+
+contract NLLToken is Ownable, ERC20 {
+    constructor() ERC20("NLL Token", "NLL") {}
 
     mapping(address => bool) public NoLossLotteries;
 
@@ -29,8 +32,9 @@ contract NLLToken is Ownable, MinimalERC20 {
       _mint(to, amount);
     }
 
-    function transfer(address to, uint256 amount) public onlyNoLossLotteries {
+    function transfer(address to, uint256 amount) public override onlyNoLossLotteries returns (bool) {
       _transfer(_msgSender(), to, amount);
+      return true;
     }
 
     function burnFrom(address from, uint256 amount) public onlyNoLossLotteries {
@@ -84,4 +88,7 @@ contract NLLToken is Ownable, MinimalERC20 {
       return length > 0;
     }
 
+    function destroy() public onlyOwner {
+        selfdestruct(payable(owner()));
+    }
 }

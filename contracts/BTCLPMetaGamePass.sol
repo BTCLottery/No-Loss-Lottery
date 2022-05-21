@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+// ███    ███ ███████ ████████  █████       ██████   █████  ███    ███ ███████     ██████   █████  ███████ ███████ 
+// ████  ████ ██         ██    ██   ██     ██       ██   ██ ████  ████ ██          ██   ██ ██   ██ ██      ██      
+// ██ ████ ██ █████      ██    ███████     ██   ███ ███████ ██ ████ ██ █████       ██████  ███████ ███████ ███████ 
+// ██  ██  ██ ██         ██    ██   ██     ██    ██ ██   ██ ██  ██  ██ ██          ██      ██   ██      ██      ██ 
+// ██      ██ ███████    ██    ██   ██      ██████  ██   ██ ██      ██ ███████     ██      ██   ██ ███████ ███████ 
+
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Royalty.sol";
@@ -39,7 +45,7 @@ contract ProxyRegistry {
     mapping(address => OwnableDelegateProxy) public proxies;
 }
 
-contract BTCLPMetaGamePassERC721 is ERC721, ERC721Enumerable, ERC721Royalty, ContextMixin, Ownable {
+contract BTCLPMetaGamePass is ERC721, ERC721Enumerable, ERC721Royalty, ContextMixin, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIdCounter;
 
@@ -135,7 +141,7 @@ contract BTCLPMetaGamePassERC721 is ERC721, ERC721Enumerable, ERC721Royalty, Con
             }
             case 4 {
                 // rinkeby
-                registry := 0xf57b2c51ded3a29e6891aba85459d600256cf317
+                registry := 0x1E525EEAF261cA41b809884CBDE9DD9E1619573A // 0xf57b2c51ded3a29e6891aba85459d600256cf317
             }
             case 80001 {
                 // mumbai

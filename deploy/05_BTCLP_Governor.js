@@ -22,11 +22,11 @@ module.exports = async ({getNamedAccounts, deployments}) => {
       ],
       log: true,
     });
-    log(`02 - Deployed 'BTCLPGovernor' at ${governor.address}`);
+    log(`05 - Deployed 'BTCLPGovernor' at ${governor.address}`);
     await (await TimeLock.grantRole(await TimeLock.PROPOSER_ROLE(), governor.address)).wait(1);
     await (await TimeLock.grantRole(await TimeLock.EXECUTOR_ROLE(), ZERO_ADDRESS)).wait(1);
     await (await TimeLock.revokeRole(await TimeLock.TIMELOCK_ADMIN_ROLE(), deployer)).wait(1);
-    log(`02 - DAO PROPOSALS GO THROUGH THE GOVERNOR CONTRACT. EXECUTOR_ROLE and TIMELOCK_ADMIN_ROLE are renounce admin and everyone can execute.`);
+    log(`05 - ALL DAO PROPOSALS GO THROUGH THE GOVERNOR CONTRACT. Anyone can have the EXECUTOR_ROLE. The deployer renounces ownership of the TIMELOCK_ADMIN_ROLE.`);
     return true;
 };
 module.exports.tags = ['BTCLPGovernor'];

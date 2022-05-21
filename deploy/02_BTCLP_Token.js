@@ -2,14 +2,14 @@ module.exports = async ({getNamedAccounts, deployments}) => {
     const {deploy, log} = deployments;
     const {deployer} = await getNamedAccounts();
     log("Deploying BTCLPToken....");
-    const token = await deploy('BTCLPToken', {
+    const BTCLPToken = await deploy('BTCLPToken', {
       from: deployer,
       args: [],
       log: true,
     });
-    log(`01 - Deployed 'BTCLPToken' at ${token.address}`);
-    await delegate(token.address, deployer);
-    log(`01 - Delegated`);
+    log(`02 - Deployed 'BTCLPToken' at ${BTCLPToken.address}`);
+    await delegate(BTCLPToken.address, deployer); // delegate to self
+    log(`02 - Delegated`);
     return true;
 };
 module.exports.tags = ['BTCLPToken'];

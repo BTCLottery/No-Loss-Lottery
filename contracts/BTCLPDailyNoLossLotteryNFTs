@@ -69,7 +69,7 @@ contract BTCLPDailyNoLossLotteryNFTs is Context, Ownable, ReentrancyGuard, VRFCo
         createNewSubscription();
     }
 
-    function destroy() public {
+    function destroy() public onlyOwner {
         selfdestruct(payable(owner()));
     }
 

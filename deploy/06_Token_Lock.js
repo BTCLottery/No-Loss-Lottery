@@ -1,7 +1,5 @@
 const config = require('../config');
 
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
-
 module.exports = async ({getNamedAccounts, deployments}) => {
     const {deploy, log} = deployments;
     const {deployer} = await getNamedAccounts();
@@ -17,7 +15,7 @@ module.exports = async ({getNamedAccounts, deployments}) => {
       ],
       log: true,
     });
-    log(`05 - Deployed 'TokenLock' at ${tokenlock.address}`);
+    log(`07 - Deployed 'TokenLock' at ${tokenlock.address}`);
     return true;
 };
 module.exports.tags = ['TokenLock'];

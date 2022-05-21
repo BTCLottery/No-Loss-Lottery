@@ -44,7 +44,7 @@ contract BTCLPMetaGamePassERC1155 is ERC1155, IERC2981, Ownable, ERC1155Supply, 
         _mint(msg.sender, 2, 500, "0x");
     }
 
-    function destroy() public {
+    function destroy() public onlyOwner {
         selfdestruct(payable(owner()));
     }
 

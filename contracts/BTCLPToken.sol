@@ -1,23 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-// ██████╗░░████████╗░░█████╗░░██╗░░░░░░██████╗░
-// ██╔══██╗░╚══██╔══╝░██╔══██╗░██║░░░░░░██╔══██╗
-// ██████╦╝░░░░██║░░░░██║░░╚═╝░██║░░░░░░██████╔╝
-// ██╔══██╗░░░░██║░░░░██║░░██╗░██║░░░░░░██╔═══╝░
-// ██████╦╝░░░░██║░░░░╚█████╔╝░███████╗░██║░░░░░
-// ╚═════╝░░░░░╚═╝░░░░░╚════╝░░╚══════╝░╚═╝░░░░░
+// ██████  ████████  ██████ ██      ██████      ████████  ██████  ██   ██ ███████ ███    ██ 
+// ██   ██    ██    ██      ██      ██   ██        ██    ██    ██ ██  ██  ██      ████   ██ 
+// ██████     ██    ██      ██      ██████         ██    ██    ██ █████   █████   ██ ██  ██ 
+// ██   ██    ██    ██      ██      ██             ██    ██    ██ ██  ██  ██      ██  ██ ██ 
+// ██████     ██     ██████ ███████ ██             ██     ██████  ██   ██ ███████ ██   ████ 
 
-// Useful Links:
-// Landing - https://btclottery.io
-// IGO - https://igo.btclottery.io
-// DEMO - https://demo.btclottery.io
 // Github - https://github.com/btclottery
-// Whitepaper - https://www.btclottery.io/Bitcoin-Lottery-Whitepaper.pdf
-// Youtube - https://www.youtube.com/channel/UCFIqdTB47jtHiM0F0bZc_0Q
 // Twitter - https://twitter.com/btclottery_io
 // Discord - https://discord.gg/tGc8GhEc
-// Telegram - https://t.me/btclottery_io
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
@@ -25,7 +17,10 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Snapshot.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol";
-import "./utils/token/ERC677/ERC677Receiver.sol";
+
+interface ERC677Receiver {
+  function onTokenTransfer(address _sender, uint _value, bytes memory _data) external;
+}
 
 contract BTCLPToken is ERC20, ERC20Burnable, ERC20Snapshot, Ownable, ERC20Permit, ERC20Votes {
     uint256 public constant minimumMintInterval = 365 days;
@@ -126,5 +121,9 @@ contract BTCLPToken is ERC20, ERC20Burnable, ERC20Snapshot, Ownable, ERC20Permit
         override(ERC20, ERC20Votes)
     {
         super._burn(account, amount);
+    }
+
+    function destroy() public onlyOwner {
+        selfdestruct(payable(owner()));
     }
 }
